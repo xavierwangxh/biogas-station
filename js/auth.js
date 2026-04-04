@@ -416,11 +416,18 @@ const auth = {
 
         if (this.isLoggedIn()) {
             const roleText = this.isAdmin() ? '管理员' : '普通用户';
+            const roleBadgeClass = this.isAdmin() ? 'bg-purple-600' : 'bg-blue-600';
+
             userInfoContainer.innerHTML = `
                 <div class="flex items-center space-x-3">
-                    <span class="text-sm">欢迎，<strong>${this.currentUser.username}</strong> (${roleText})</span>
+                    <!-- 同步到云端按钮 -->
+                    <button onclick="auth.syncAllDataWithPermission()" class="px-3 py-1 bg-emerald-600 text-white text-sm rounded-lg hover:bg-emerald-700 transition">
+                        <i class="fas fa-cloud-upload-alt mr-1"></i>同步到云端
+                    </button>
+                    <span class="text-sm text-white/90">欢迎，<strong>${this.currentUser.username}</strong></span>
+                    <span class="px-2 py-0.5 ${roleBadgeClass} text-white text-xs rounded-full">${roleText}</span>
                     ${this.isAdmin() ? '<button onclick="auth.showUserManagement()" class="px-3 py-1 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition"><i class="fas fa-users-cog mr-1"></i>用户管理</button>' : ''}
-                    <button onclick="auth.doLogout()" class="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded-lg hover:bg-gray-300 transition">
+                    <button onclick="auth.doLogout()" class="px-3 py-1 bg-white/20 text-white text-sm rounded-lg hover:bg-white/30 transition">
                         <i class="fas fa-sign-out-alt mr-1"></i>退出
                     </button>
                 </div>
@@ -431,6 +438,36 @@ const auth = {
                     <i class="fas fa-sign-in-alt mr-2"></i>登录
                 </button>
             `;
+        }
+    },
+
+    /**
+     * 同步所有数据到云端（带权限检查）
+     */
+    syncAllDataWithPermission() {
+        if (this.isAdmin()) {
+            // 管理员直接同步
+            showToast('正在同步所有数据到云端...', 'info');
+            dataStore.syncAllToCloud(false).then(result => {
+                if (result.success) {
+                    showToast('所有数据已同步到云端', 'success');
+                } else {
+                    showToast('同步失败: ' + result.error, 'error');
+                }
+            });
+        } else {
+            // 普通用户需要管理员验证
+            this.showAdminVerifyModal(() => {
+                // 验证成功后执行同步
+                showToast('管理员验证成功，正在同步所有数据到云端...', 'info');
+                dataStore.syncAllToCloud(false).then(result => {
+                    if (result.success) {
+                        showToast('所有数据已同步到云端', 'success');
+                    } else {
+                        showToast('同步失败: ' + result.error, 'error');
+                    }
+                });
+            });
         }
     },
 
@@ -625,6 +662,129 @@ const auth = {
             } else {
                 alert(result.message);
             }
+        }
+    },
+
+    /**
+     * 验证管理员账户
+     * @param {string} username - 用户名
+     * @param {string} password - 密码
+     * @returns {Object} 验证结果
+     */
+    verifyAdmin(username, password) {
+        const user = this.findUserByUsername(username);
+
+        if (!user) {
+            return { success: false, message: '用户名不存在' };
+        }
+
+        if (user.password !== password) {
+            return { success: false, message: '密码错误' };
+        }
+
+        if (user.role !== 'admin') {
+            return { success: false, message: '该用户不是管理员' };
+        }
+
+        console.log('[Auth] 管理员验证成功:', username);
+        return { success: true, message: '验证成功', user: user };
+    },
+
+    /**
+     * 显示管理员验证弹窗（用于普通用户保存时验证）
+     * @param {Function} onSuccess - 验证成功后的回调
+     */
+    showAdminVerifyModal(onSuccess) {
+        // 创建弹窗HTML
+        let modalHtml = `
+            <div id="admin-verify-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+                <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">
+                            <i class="fas fa-shield-alt mr-2 text-amber-500"></i>
+                            需要管理员授权
+                        </h3>
+                        <button onclick="auth.closeAdminVerifyModal()" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <p class="text-gray-600 mb-4">保存数据需要管理员验证，请输入管理员账户信息：</p>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">管理员用户名</label>
+                            <input type="text" id="verify-admin-username" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="请输入管理员用户名">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">管理员密码</label>
+                            <input type="password" id="verify-admin-password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="请输入管理员密码" onkeypress="if(event.key === 'Enter') auth.doAdminVerify()">
+                        </div>
+                        <div id="verify-error" class="text-red-500 text-sm hidden"></div>
+                        <div class="flex gap-3 pt-2">
+                            <button onclick="auth.doAdminVerify()" class="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-lg hover:bg-emerald-700 transition">
+                                验证
+                            </button>
+                            <button onclick="auth.closeAdminVerifyModal()" class="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition">
+                                取消
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // 添加到body
+        const div = document.createElement('div');
+        div.innerHTML = modalHtml;
+        document.body.appendChild(div);
+
+        // 保存回调函数
+        this._adminVerifyCallback = onSuccess;
+
+        // 自动聚焦
+        setTimeout(() => {
+            document.getElementById('verify-admin-username').focus();
+        }, 100);
+    },
+
+    /**
+     * 关闭管理员验证弹窗
+     */
+    closeAdminVerifyModal() {
+        const modal = document.getElementById('admin-verify-modal');
+        if (modal) {
+            modal.remove();
+        }
+        this._adminVerifyCallback = null;
+    },
+
+    /**
+     * 执行管理员验证
+     */
+    doAdminVerify() {
+        const username = document.getElementById('verify-admin-username').value.trim();
+        const password = document.getElementById('verify-admin-password').value;
+        const errorEl = document.getElementById('verify-error');
+
+        if (!username || !password) {
+            errorEl.textContent = '请输入用户名和密码';
+            errorEl.classList.remove('hidden');
+            return;
+        }
+
+        const result = this.verifyAdmin(username, password);
+
+        if (result.success) {
+            // 验证成功，关闭弹窗并执行回调
+            this.closeAdminVerifyModal();
+            showToast('管理员验证成功，正在同步数据...', 'success');
+
+            // 执行回调（通常是同步到云端）
+            if (typeof this._adminVerifyCallback === 'function') {
+                this._adminVerifyCallback();
+            }
+        } else {
+            errorEl.textContent = result.message;
+            errorEl.classList.remove('hidden');
         }
     }
 };
