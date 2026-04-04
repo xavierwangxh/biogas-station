@@ -1,0 +1,154 @@
+{
+  "personnel": [
+    {
+      "id": "person_001",
+      "name": "张伟",
+      "gender": "男",
+      "age": 38,
+      "department": "工程部",
+      "position": "项目经理",
+      "experience": {
+        "projectCount": 15,
+        "years": 12,
+        "processes": ["PSA", "membrane"]
+      },
+      "capabilities": {
+        "technical": 9,
+        "management": 8,
+        "coordination": 8
+      },
+      "maxProjects": 4,
+      "currentProjects": ["proj_001", "proj_003"],
+      "location": {
+        "province": "山东省",
+        "city": "济南市"
+      },
+      "contact": {
+        "phone": "13800138001",
+        "email": "zhangwei@example.com"
+      },
+      "createdAt": "2020-01-01T00:00:00.000Z",
+      "updatedAt": "2025-03-01T00:00:00.000Z"
+    },
+    {
+      "id": "person_002",
+      "name": "李芳",
+      "gender": "女",
+      "age": 35,
+      "department": "技术部",
+      "position": "高级工程师",
+      "experience": {
+        "projectCount": 12,
+        "years": 10,
+        "processes": ["PSA", "cryogenic"]
+      },
+      "capabilities": {
+        "technical": 10,
+        "management": 7,
+        "coordination": 7
+      },
+      "maxProjects": 3,
+      "currentProjects": ["proj_001", "proj_005"],
+      "location": {
+        "province": "河南省",
+        "city": "郑州市"
+      },
+      "contact": {
+        "phone": "13800138002",
+        "email": "lifang@example.com"
+      },
+      "createdAt": "2020-01-01T00:00:00.000Z",
+      "updatedAt": "2025-03-01T00:00:00.000Z"
+    },
+    {
+      "id": "person_003",
+      "name": "王强",
+      "gender": "男",
+      "age": 42,
+      "department": "工程部",
+      "position": "工程总监",
+      "experience": {
+        "projectCount": 20,
+        "years": 15,
+        "processes": ["membrane", "cryogenic", "other"]
+      },
+      "capabilities": {
+        "technical": 8,
+        "management": 9,
+        "coordination": 9
+      },
+      "maxProjects": 5,
+      "currentProjects": ["proj_002", "proj_004", "proj_005"],
+      "location": {
+        "province": "河北省",
+        "city": "唐山市"
+      },
+      "contact": {
+        "phone": "13800138003",
+        "email": "wangqiang@example.com"
+      },
+      "createdAt": "2019-01-01T00:00:00.000Z",
+      "updatedAt": "2025-03-01T00:00:00.000Z"
+    },
+    {
+      "id": "person_004",
+      "name": "刘敏",
+      "gender": "女",
+      "age": 33,
+      "department": "技术部",
+      "position": "工艺工程师",
+      "experience": {
+        "projectCount": 8,
+        "years": 7,
+        "processes": ["PSA", "membrane", "cryogenic"]
+      },
+      "capabilities": {
+        "technical": 9,
+        "management": 6,
+        "coordination": 7
+      },
+      "maxProjects": 3,
+      "currentProjects": [],
+      "location": {
+        "province": "江苏省",
+        "city": "南京市"
+      },
+      "contact": {
+        "phone": "13800138004",
+        "email": "liumin@example.com"
+      },
+      "createdAt": "2021-01-01T00:00:00.000Z",
+      "updatedAt": "2025-03-01T00:00:00.000Z"
+    },
+    {
+      "id": "person_005",
+      "name": "陈建国",
+      "gender": "男",
+      "age": 45,
+      "department": "运营部",
+      "position": "运营总监",
+      "experience": {
+        "projectCount": 18,
+        "years": 18,
+        "processes": ["PSA", "membrane"]
+      },
+      "capabilities": {
+        "technical": 7,
+        "management": 9,
+        "coordination": 9
+      },
+      "maxProjects": 4,
+      "currentProjects": [],
+      "location": {
+        "province": "安徽省",
+        "city": "合肥市"
+      },
+      "contact": {
+        "phone": "13800138005",
+        "email": "chenjianguo@example.com"
+      },
+      "createdAt": "2018-01-01T00:00:00.000Z",
+      "updatedAt": "2025-03-01T00:00:00.000Z"
+    }
+  ]
+}
