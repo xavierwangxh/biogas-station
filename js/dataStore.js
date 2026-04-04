@@ -31,9 +31,6 @@ const dataStore = {
     async init() {
         console.log('[DataStore] 初始化开始 (云端版 v2.0.0)...');
 
-        // 尝试从云端加载数据
-        await this.syncFromCloud();
-
         // 检查并设置数据版本
         const currentVersion = localStorage.getItem(this.KEYS.VERSION);
         if (!currentVersion) {
@@ -41,8 +38,11 @@ const dataStore = {
             localStorage.setItem(this.KEYS.VERSION, this.DATA_VERSION);
         }
 
-        // 确保所有存储键都存在
+        // 确保所有存储键都存在（如果不存在才初始化为空数组）
         this.ensureStorageKeys();
+
+        // 尝试从云端加载数据（优先级高于本地数据）
+        await this.syncFromCloud();
 
         console.log('[DataStore] 初始化完成');
         return true;
@@ -50,6 +50,7 @@ const dataStore = {
 
     /**
      * 确保所有存储键都存在
+     * 注意：如果键已存在，不覆盖现有数据
      */
     ensureStorageKeys() {
         const keys = [this.KEYS.PROJECTS, this.KEYS.PERSONNEL, this.KEYS.PROJECT_GROUPS, this.KEYS.SETTINGS];
@@ -62,7 +63,7 @@ const dataStore = {
     },
 
     /**
-     * 从云端同步数据
+     * 从云端同步数据（强制覆盖本地数据）
      */
     async syncFromCloud() {
         console.log('[DataStore] 尝试从云端同步数据...');
@@ -70,8 +71,10 @@ const dataStore = {
         try {
             // 从云端获取项目
             const cloudProjects = await supabaseClient.get('projects');
+            console.log(`[DataStore] 云端项目数量: ${cloudProjects ? cloudProjects.length : 0}`);
+
             if (cloudProjects && cloudProjects.length > 0) {
-                console.log(`[DataStore] 云端获取到 ${cloudProjects.length} 个项目`);
+                console.log(`[DataStore] 云端获取到 ${cloudProjects.length} 个项目，强制更新本地数据`);
                 // 转换为前端格式
                 const projects = cloudProjects.map(p => ({
                     id: p.id,
@@ -89,8 +92,10 @@ const dataStore = {
 
             // 从云端获取人员
             const cloudPersonnel = await supabaseClient.get('personnel');
+            console.log(`[DataStore] 云端人员数量: ${cloudPersonnel ? cloudPersonnel.length : 0}`);
+
             if (cloudPersonnel && cloudPersonnel.length > 0) {
-                console.log(`[DataStore] 云端获取到 ${cloudPersonnel.length} 名人员`);
+                console.log(`[DataStore] 云端获取到 ${cloudPersonnel.length} 名人员，强制更新本地数据`);
                 // 转换为前端格式
                 const personnel = cloudPersonnel.map(p => ({
                     id: p.id,
@@ -115,12 +120,16 @@ const dataStore = {
             this.cloudSync.lastSync = new Date().toISOString();
             localStorage.setItem(this.KEYS.LAST_SYNC, this.cloudSync.lastSync);
             console.log('[DataStore] 云端同步完成');
-            showToast('数据已从云端同步', 'success');
+
+            // 刷新页面以显示新数据
+            if (typeof refreshUI === 'function') {
+                refreshUI();
+            }
 
         } catch (error) {
             console.error('[DataStore] 云端同步失败:', error);
             this.cloudSync.enabled = false;
-            showToast('云端同步失败，将使用本地数据', 'warning');
+            console.log('[DataStore] 将使用本地缓存数据');
         }
     },
 
