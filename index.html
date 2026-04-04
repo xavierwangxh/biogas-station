@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>沼气提纯站项目全生命周期管理系统</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <!-- 高德地图 1.4.15版本 - 更稳定 -->
+    <script src="https://webapi.amap.com/maps?v=1.4.15&key=1961cbaef6920ce1a77c5df75119db06&plugin=AMap.Scale,AMap.ToolBar,AMap.Geocoder,AMap.Circle,AMap.CircleMarker,AMap.Text,AMap.Marker,AMap.InfoWindow,AMap.Polyline,AMap.TileLayer"></script>
+    <!-- SheetJS for Excel导出 -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/gantt.css">
+    <!-- Supabase Client -->
+    <script src="js/supabaseClient.js"></script>
+    <!-- Auth Module -->
+    <script src="js/auth.js"></script>
+    <!-- Core Modules -->
+    <script src="js/dataStore.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/projectManager.js"></script>
+    <script src="js/personnelManager.js"></script>
+    <!-- UI Modules -->
+    <script src="js/app.js"></script>
+    <script src="js/smartRecommendation.js"></script>
+    <script src="js/ganttChart.js"></script>
+    <script src="js/mapVisualization.js"></script>
+    <script src="js/excelExporter.js"></script>
+    <script src="js/dataImporter.js"></script>
+    <script src="js/districtCoordinates.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- 登录模态框 -->
+    <div id="login-modal" class="fixed inset-0 bg-gradient-to-br from-emerald-600 to-teal-700 z-[100] flex items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 mx-4">
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-industry text-emerald-600 text-3xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800">沼气提纯站管理系统</h2>
+                <p class="text-gray-500 mt-2">请登录以继续</p>
+            </div>
+
+            <form onsubmit="event.preventDefault(); auth.doLogin();">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">用户名</label>
+                    <div class="relative">
+                        <i class="fas fa-user absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        <input type="text" id="login-username" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="请输入用户名" autocomplete="username">
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">密码</label>
+                    <div class="relative">
+                        <i class="fas fa-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        <input type="password" id="login-password" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent" placeholder="请输入密码" autocomplete="current-password">
+                    </div>
+                </div>
+
+                <div id="login-error" class="hidden mb-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <span></span>
+                </div>
+
+                <button type="submit" class="w-full py-3 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 transition">
+                    <i class="fas fa-sign-in-alt mr-2"></i>登录
+                </button>
+            </form>
+
+            <div class="mt-6 text-center text-sm text-gray-500">
+                <p>默认账户：</p>
+                <p class="mt-1">普通用户：<code class="bg-gray-100 px-2 py-1 rounded">user</code> / <code class="bg-gray-100 px-2 py-1 rounded">123123</code></p>
+                <p class="mt-1">管理员：<code class="bg-gray-100 px-2 py-1 rounded">admin</code> / <code class="bg-gray-100 px-2 py-1 rounded">!23456</code></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 用户管理模态框 -->
+    <div id="user-management-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4">
+            <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-purple-700">
+                    <i class="fas fa-users-cog mr-2"></i>用户管理
+                </h3>
+                <button onclick="auth.hideUserManagement()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <!-- 添加用户按钮 -->
+                <div class="mb-4">
+                    <button onclick="auth.hideUserManagement(); auth.showAddUserModal();" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition">
+                        <i class="fas fa-user-plus mr-2"></i>添加用户
+                    </button>
+                </div>
+
+                <!-- 用户列表 -->
+                <div id="user-list-container" class="space-y-2">
+                    <!-- 动态渲染 -->
+                </div>
+            </div>
+            <div class="border-t px-6 py-4 flex justify-end">
+                <button onclick="auth.hideUserManagement()" class="px-4 py-2 border rounded-lg hover:bg-gray-100 transition">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加用户模态框 -->
+    <div id="add-user-modal" class="fixed inset-0 bg-black/50 hidden z-[60] flex items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md m-4">
+            <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-emerald-700">
+                    <i class="fas fa-user-plus mr-2"></i>添加用户
+                </h3>
+                <button onclick="auth.hideAddUserModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">用户名</label>
+                    <input type="text" id="add-username" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="请输入用户名">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">密码</label>
+                    <input type="password" id="add-password" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="请输入密码（至少4位）">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">角色</label>
+                    <select id="add-role" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <option value="user">普通用户</option>
+                        <option value="admin">管理员</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-4">
+                    <button onclick="auth.hideAddUserModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-100 transition">取消</button>
+                    <button onclick="auth.doAddUser()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition">添加</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑用户模态框 -->
+    <div id="edit-user-modal" class="fixed inset-0 bg-black/50 hidden z-[60] flex items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md m-4">
+            <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-blue-700">
+                    <i class="fas fa-edit mr-2"></i>编辑用户
+                </h3>
+                <button onclick="auth.hideEditUserModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <input type="hidden" id="edit-user-id">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">用户名</label>
+                    <input type="text" id="edit-username" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">密码</label>
+                    <input type="password" id="edit-password" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">角色</label>
+                    <select id="edit-role" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="user">普通用户</option>
+                        <option value="admin">管理员</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-4">
+                    <button onclick="auth.hideEditUserModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-100 transition">取消</button>
+                    <button onclick="auth.doEditUser()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 导航栏 -->
+    <nav class="bg-gradient-to-r from-emerald-700 to-teal-600 text-white shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center justify-between w-full">
+                    <div class="flex items-center space-x-3">
+                        <i class="fas fa-industry text-2xl"></i>
+                        <span class="text-xl font-bold">沼气提纯站项目管理系统</span>
+                    </div>
+                    <!-- 用户信息区域 -->
+                    <div id="user-info-container" class="flex items-center space-x-3">
+                        <!-- 动态渲染 -->
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center space-x-1">
+                    <button onclick="app.switchTab('dashboard')" class="nav-btn px-4 py-2 rounded-lg hover:bg-white/20 transition" data-tab="dashboard">
+                        <i class="fas fa-tachometer-alt mr-2"></i>概览
+                    </button>
+                    <button onclick="app.switchTab('projects')" class="nav-btn px-4 py-2 rounded-lg hover:bg-white/20 transition" data-tab="projects">
+                        <i class="fas fa-project-diagram mr-2"></i>项目管理
+                    </button>
+                    <button onclick="app.switchTab('personnel')" class="nav-btn px-4 py-2 rounded-lg hover:bg-white/20 transition" data-tab="personnel">
+                        <i class="fas fa-users mr-2"></i>人员管理
+                    </button>
+                    <button onclick="app.switchTab('map')" class="nav-btn px-4 py-2 rounded-lg hover:bg-white/20 transition" data-tab="map">
+                        <i class="fas fa-map-marked-alt mr-2"></i>地图视图
+                    </button>
+                    <button onclick="app.switchTab('gantt')" class="nav-btn px-4 py-2 rounded-lg hover:bg-white/20 transition" data-tab="gantt">
+                        <i class="fas fa-stream mr-2"></i>甘特图
+                    </button>
+                    <button onclick="app.switchTab('assessment')" class="nav-btn px-4 py-2 rounded-lg hover:bg-white/20 transition" data-tab="assessment">
+                        <i class="fas fa-chart-line mr-2"></i>人员负荷评估
+                    </button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <!-- 导入按钮 -->
+                    <div class="relative" id="import-dropdown-container">
+                        <button class="px-4 py-2 rounded-lg bg-white/20 hover:bg-white/30 transition" id="import-btn">
+                            <i class="fas fa-upload mr-2"></i>导入
+                        </button>
+                        <div id="import-dropdown" class="absolute right-0 top-full pt-2 w-48 hidden z-50">
+                            <div class="bg-white rounded-lg shadow-xl py-2">
+                                <a href="#" onclick="document.getElementById('import-projects-file').click(); return false;" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-file-excel mr-2 text-green-600"></i>导入项目
+                                </a>
+                                <a href="#" onclick="document.getElementById('import-personnel-file').click(); return false;" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-file-excel mr-2 text-green-600"></i>导入人员
+                                </a>
+                                <a href="#" onclick="document.getElementById('import-full-file').click(); return false;" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-file-import mr-2 text-blue-600"></i>批量导入完整数据
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 导出按钮 -->
+                    <div class="relative" id="export-dropdown-container">
+                        <button class="px-4 py-2 rounded-lg bg-white/20 hover:bg-white/30 transition" id="export-btn">
+                            <i class="fas fa-download mr-2"></i>导出
+                        </button>
+                        <div id="export-dropdown" class="absolute right-0 top-full pt-2 w-48 hidden z-50">
+                            <div class="bg-white rounded-lg shadow-xl py-2">
+                                <a href="#" onclick="excelExporter.exportProjects(); return false;" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-file-excel mr-2 text-green-600"></i>导出项目
+                                </a>
+                                <a href="#" onclick="excelExporter.exportPersonnel(); return false;" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-file-excel mr-2 text-green-600"></i>导出人员
+                                </a>
+                                <a href="#" onclick="excelExporter.exportFullReport(); return false;" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+                                    <i class="fas fa-file-export mr-2 text-blue-600"></i>导出完整报告
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 隐藏的文件上传输入 -->
+                <input type="file" id="import-projects-file" accept=".xlsx,.xls" class="hidden" onchange="dataImporter.importProjects(this.files[0])">
+                <input type="file" id="import-personnel-file" accept=".xlsx,.xls" class="hidden" onchange="dataImporter.importPersonnel(this.files[0])">
+                <input type="file" id="import-full-file" accept=".xlsx,.xls" class="hidden" onchange="dataImporter.importFullData(this.files[0])">
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区域 -->
+    <main class="container mx-auto px-4 py-6">
+        <!-- 概览面板 -->
+        <div id="dashboard-tab" class="tab-content">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-emerald-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm">项目总数</p>
+                            <p class="text-3xl font-bold text-gray-800" id="stat-total-projects">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-project-diagram text-emerald-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm">人员总数</p>
+                            <p class="text-3xl font-bold text-gray-800" id="stat-total-personnel">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-users text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm">项目群</p>
+                            <p class="text-3xl font-bold text-gray-800" id="stat-project-groups">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-object-group text-purple-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-amber-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-500 text-sm">在建项目</p>
+                            <p class="text-3xl font-bold text-gray-800" id="stat-active-projects">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-hard-hat text-amber-600 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 快捷操作 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fas fa-bolt text-yellow-500 mr-2"></i>快捷操作
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button onclick="app.showProjectModal()" class="p-4 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition text-left">
+                            <i class="fas fa-plus-circle text-emerald-600 text-2xl mb-2"></i>
+                            <p class="font-medium text-gray-800">新建项目</p>
+                            <p class="text-sm text-gray-500">添加新的沼气提纯站项目</p>
+                        </button>
+                        <button onclick="app.showPersonnelModal()" class="p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition text-left">
+                            <i class="fas fa-user-plus text-blue-600 text-2xl mb-2"></i>
+                            <p class="font-medium text-gray-800">添加人员</p>
+                            <p class="text-sm text-gray-500">录入新的项目人员</p>
+                        </button>
+                        <button onclick="app.switchTab('map'); setTimeout(() => mapVisualization.showProjectGroups(), 500)" class="p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition text-left">
+                            <i class="fas fa-map-marked text-purple-600 text-2xl mb-2"></i>
+                            <p class="font-medium text-gray-800">查看项目群</p>
+                            <p class="text-sm text-gray-500">150km内项目自动聚合</p>
+                        </button>
+                        <button onclick="app.switchTab('gantt')" class="p-4 bg-amber-50 rounded-lg hover:bg-amber-100 transition text-left">
+                            <i class="fas fa-calendar-alt text-amber-600 text-2xl mb-2"></i>
+                            <p class="font-medium text-gray-800">甘特图</p>
+                            <p class="text-sm text-gray-500">查看项目进度安排</p>
+                        </button>
+                        <button onclick="app.switchTab('assessment')" class="p-4 bg-rose-50 rounded-lg hover:bg-rose-100 transition text-left">
+                            <i class="fas fa-chart-line text-rose-600 text-2xl mb-2"></i>
+                            <p class="font-medium text-gray-800">人员负荷评估</p>
+                            <p class="text-sm text-gray-500">评估人员配置合理性</p>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fas fa-chart-pie text-blue-500 mr-2"></i>项目状态分布
+                    </h3>
+                    <div id="status-chart" style="height: 200px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 项目管理面板 -->
+        <div id="projects-tab" class="tab-content hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">项目管理</h2>
+                <button onclick="app.showProjectModal()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition">
+                    <i class="fas fa-plus mr-2"></i>新建项目
+                </button>
+            </div>
+
+            <!-- 筛选栏 -->
+            <div class="bg-white rounded-xl shadow-md p-4 mb-6">
+                <div class="flex flex-wrap gap-4">
+                    <input type="text" id="project-search" placeholder="搜索项目名称..." 
+                           class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                           oninput="app.filterProjects()">
+                    <select id="project-stage-filter" class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            onchange="app.filterProjects()">
+                        <option value="">所有阶段</option>
+                        <option value="tracking">跟踪</option>
+                        <option value="contract">签约</option>
+                        <option value="procedure">手续</option>
+                        <option value="construction">建设</option>
+                        <option value="operation">运营</option>
+                    </select>
+                    <select id="project-province-filter" class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            onchange="app.filterProjects()">
+                        <option value="">所有省份</option>
+                    </select>
+                    <select id="project-department-filter" class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            onchange="app.filterProjects()">
+                        <option value="">所有部门</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 项目列表 -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">项目名称</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">位置</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">设计规模</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">处理工艺</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">当前阶段</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">牵头人</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="projects-table-body" class="divide-y divide-gray-200">
+                        <!-- 动态填充 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 人员管理面板 -->
+        <div id="personnel-tab" class="tab-content hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">人员管理</h2>
+                <div class="flex gap-2">
+                    <button onclick="app.showDepartmentModal()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                        <i class="fas fa-sitemap mr-2"></i>管理部门
+                    </button>
+                    <button onclick="app.showPersonnelModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-plus mr-2"></i>添加人员
+                    </button>
+                </div>
+            </div>
+
+            <!-- 部门筛选 -->
+            <div class="bg-white rounded-xl shadow-md p-4 mb-6">
+                <div class="flex flex-wrap gap-2" id="department-filters">
+                    <button class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm" onclick="app.filterPersonnelByDept('')">全部</button>
+                    <!-- 动态填充部门按钮 -->
+                </div>
+            </div>
+
+            <!-- 人员卡片网格 -->
+            <div id="personnel-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- 动态填充 -->
+            </div>
+        </div>
+
+        <!-- 地图视图面板 -->
+        <div id="map-tab" class="tab-content hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-gray-800">地图视图</h2>
+                <div class="flex gap-2">
+                    <button onclick="mapVisualization.showAllProjects()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition">
+                        <i class="fas fa-map-marker-alt mr-2"></i>显示所有项目
+                    </button>
+                    <button onclick="mapVisualization.showProjectGroups()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                        <i class="fas fa-object-group mr-2"></i>显示项目群(150km)
+                    </button>
+                </div>
+            </div>
+            <div id="map-container-wrapper" style="width: 100%; height: 600px; position: relative;">
+                <div id="map-container" style="width: 100%; height: 100%; border-radius: 0.75rem; overflow: hidden;"></div>
+            </div>
+        </div>
+
+        <!-- 甘特图面板 -->
+        <div id="gantt-tab" class="tab-content hidden">
+            <div class="flex flex-col gap-4 mb-4">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold text-gray-800">项目甘特图</h2>
+                    <div class="flex gap-2">
+                        <!-- 视图切换 -->
+                        <button onclick="ganttChart.switchView('project')" id="gantt-view-project" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition">
+                            <i class="fas fa-project-diagram mr-2"></i>按项目
+                        </button>
+                        <button onclick="ganttChart.switchView('person')" id="gantt-view-person" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                            <i class="fas fa-user mr-2"></i>按人员
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 时间维度控制和缩放 -->
+                <div class="flex justify-between items-center bg-white rounded-lg shadow-sm p-3">
+                    <div class="flex items-center gap-4">
+                        <span class="text-sm text-gray-500 font-medium">时间维度:</span>
+                        <select id="gantt-time-scale" onchange="ganttChart.setTimeScale(this.value)" class="px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm">
+                            <option value="day">按日查看</option>
+                            <option value="week">按周查看</option>
+                            <option value="month" selected>按月查看</option>
+                            <option value="quarter">按季度查看</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm text-gray-500 font-medium mr-2">缩放:</span>
+                        <button onclick="ganttChart.zoomOut()" class="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-lg transition" title="缩小">
+                            <i class="fas fa-minus text-gray-600"></i>
+                        </button>
+                        <span id="gantt-zoom-level" class="text-sm text-gray-600 min-w-[50px] text-center">100%</span>
+                        <button onclick="ganttChart.zoomIn()" class="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-lg transition" title="放大">
+                            <i class="fas fa-plus text-gray-600"></i>
+                        </button>
+                        <button onclick="ganttChart.resetZoom()" class="ml-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition text-sm" title="重置">
+                            <i class="fas fa-compress-arrows-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-md p-4">
+                <div id="gantt-container" style="height: 500px; overflow-x: auto;">
+                    <!-- 甘特图渲染区域 -->
+                </div>
+            </div>
+            <!-- 人员负荷分析 -->
+            <div id="workload-analysis" class="mt-6 bg-white rounded-xl shadow-md p-6 hidden">
+                <h3 class="text-lg font-semibold mb-4">人员工作负荷分析</h3>
+                <div id="workload-chart" style="height: 300px;"></div>
+            </div>
+        </div>
+
+        <!-- 人员负荷评估面板 -->
+        <div id="assessment-tab" class="tab-content hidden">
+            <div id="personnel-assessment-container">
+                <!-- 由app.js动态加载personnel-assessment.html内容 -->
+            </div>
+        </div>
+    </main>
+
+    <!-- 项目编辑弹窗 -->
+    <div id="project-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto m-4">
+            <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+                <h3 class="text-xl font-bold" id="project-modal-title">新建项目</h3>
+                <button onclick="app.closeProjectModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <form id="project-form" class="p-6">
+                <input type="hidden" id="project-id">
+                
+                <!-- 基本信息 -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-semibold mb-4 text-emerald-700 border-b pb-2">基本信息</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">项目名称 <span class="text-red-500">*</span></label>
+                            <input type="text" id="project-name" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">详细地址 <span class="text-red-500">*</span></label>
+                            <input type="text" id="project-address" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                    </div>
+                    <!-- 省市区三级联动 -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">省份</label>
+                            <select id="project-province" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" onchange="app.onProvinceChange()">
+                                <option value="">请选择省份</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">城市</label>
+                            <select id="project-city" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" onchange="app.onCityChange()">
+                                <option value="">请选择城市</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">区县</label>
+                            <select id="project-district" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                <option value="">请选择区县</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 技术参数 -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-semibold mb-4 text-emerald-700 border-b pb-2">技术参数</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">设计规模 (Nm³/h)</label>
+                            <input type="number" id="project-capacity" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">日产气量预估 (千方/天)</label>
+                            <input type="number" id="project-daily-output" step="0.1" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">电费单价 (元/度)</label>
+                            <input type="number" id="project-electricity" step="0.01" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">蒸汽费单价 (元/吨)</label>
+                            <input type="number" id="project-steam" step="0.01" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 处理工艺多选 -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-semibold mb-4 text-emerald-700 border-b pb-2">处理工艺</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- 脱硫工艺 -->
+                        <div class="bg-orange-50 p-4 rounded-lg">
+                            <h5 class="font-medium text-orange-700 mb-3"><i class="fas fa-filter mr-2"></i>脱硫工艺</h5>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="processes" value="dry_desulfurization" class="rounded text-orange-600 mr-2">
+                                    <span>干法脱硫</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="processes" value="wet_desulfurization" class="rounded text-orange-600 mr-2">
+                                    <span>湿法脱硫</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="processes" value="biological_desulfurization" class="rounded text-orange-600 mr-2">
+                                    <span>生物脱硫</span>
+                                </label>
+                            </div>
+                        </div>
+                        <!-- 脱碳工艺 -->
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <h5 class="font-medium text-blue-700 mb-3"><i class="fas fa-wind mr-2"></i>脱碳工艺</h5>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="processes" value="psa" class="rounded text-blue-600 mr-2">
+                                    <span>PSA变压吸附</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="processes" value="membrane" class="rounded text-blue-600 mr-2">
+                                    <span>膜分离</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="processes" value="chemical_absorption" class="rounded text-blue-600 mr-2">
+                                    <span>化学吸收</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 其他工艺 -->
+                    <div class="mt-4">
+                        <label class="flex items-center mb-2">
+                            <input type="checkbox" id="process-other-check" class="rounded text-gray-600 mr-2" onchange="app.toggleOtherProcess()">
+                            <span>其他工艺</span>
+                        </label>
+                        <div id="process-other-input-container" class="hidden">
+                            <input type="text" id="project-process-other" placeholder="请输入其他工艺名称，多个用逗号分隔" 
+                                   class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 其他信息 -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-semibold mb-4 text-emerald-700 border-b pb-2">其他信息</h4>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">备注信息</label>
+                        <textarea id="project-notes" rows="3" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="请输入其他需要记录的信息..."></textarea>
+                    </div>
+                </div>
+
+                <!-- 生命周期 -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-semibold mb-4 text-emerald-700 border-b pb-2">项目生命周期</h4>
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div class="font-medium text-gray-700">跟踪阶段</div>
+                            <div>
+                                <label class="text-xs text-gray-500">开始日期</label>
+                                <input type="date" id="stage-tracking-start" class="w-full px-2 py-1 border rounded">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500">结束日期</label>
+                                <input type="date" id="stage-tracking-end" class="w-full px-2 py-1 border rounded">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500">牵头人</label>
+                                <select id="stage-tracking-leader" class="w-full px-2 py-1 border rounded personnel-select">
+                                    <option value="">请选择</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div class="font-medium text-gray-700">签约阶段</div>
+                            <div>
+                                <label class="text-xs text-gray-500">开始日期</label>
+                                <input type="date" id="stage-contract-start" class="w-full px-2 py-1 border rounded">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500">结束日期</label>
+                                <input type="date" id="stage-contract-end" class="w-full px-2 py-1 border rounded">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500">牵头人</label>
+                                <select id="stage-contract-leader" class="w-full px-2 py-1 border rounded personnel-select">
+                                    <option value="">请选择</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div class="font-medium text-gray-700">手续阶段</div>
+                            <div>
+                                <label class="text-xs text-gray-500">开始日期</label>
+                                <input type="date" id="stage-procedure-start" class="w-full px-2 py-1 border rounded">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500">结束日期</label>
+                                <input type="date" id="stage-procedure-end" class="w-full px-2 py-1 border rounded">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500">牵头人</label>
+                                <select id="stage-procedure-leader" class="w-full px-2 py-1 border rounded personnel-select">
+                                    <option value="">请选择</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div class="font-medium text-gray-700">建设阶段</div>
+                            <div>
+                                <label class="text-xs text-gray-500">开始日期</label>
+                                <input type="date" id="stage-construction-start" class="w-full px-2 py-1 border rounded">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500">结束日期</label>
+                                <input type="date" id="stage-construction-end" class="w-full px-2 py-1 border rounded">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500">牵头人</label>
+                                <select id="stage-construction-leader" class="w-full px-2 py-1 border rounded personnel-select">
+                                    <option value="">请选择</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div class="font-medium text-gray-700">运营阶段</div>
+                            <div>
+                                <label class="text-xs text-gray-500">开始日期</label>
+                                <input type="date" id="stage-operation-start" class="w-full px-2 py-1 border rounded">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500">结束日期</label>
+                                <input type="date" id="stage-operation-end" class="w-full px-2 py-1 border rounded">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500">牵头人</label>
+                                <select id="stage-operation-leader" class="w-full px-2 py-1 border rounded personnel-select">
+                                    <option value="">请选择</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-4">
+                    <button type="button" onclick="app.closeProjectModal()" class="px-6 py-2 border rounded-lg hover:bg-gray-100 transition">取消</button>
+                    <button type="submit" class="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition">
+                        <i class="fas fa-save mr-2"></i>保存
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 人员编辑弹窗 -->
+    <div id="personnel-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4">
+            <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+                <h3 class="text-xl font-bold" id="personnel-modal-title">添加人员</h3>
+                <button onclick="app.closePersonnelModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <form id="personnel-form" class="p-6">
+                <input type="hidden" id="personnel-id">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">姓名 <span class="text-red-500">*</span></label>
+                        <input type="text" id="personnel-name" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">性别</label>
+                        <select id="personnel-gender" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="男">男</option>
+                            <option value="女">女</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">年龄</label>
+                        <input type="number" id="personnel-age" min="18" max="70" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">部门</label>
+                        <select id="personnel-department" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">请选择部门</option>
+                            <option value="工程部">工程部</option>
+                            <option value="技术部">技术部</option>
+                            <option value="运营部">运营部</option>
+                            <option value="市场部">市场部</option>
+                            <option value="财务部">财务部</option>
+                            <option value="行政部">行政部</option>
+                            <option value="采购部">采购部</option>
+                            <option value="质量部">质量部</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">职位</label>
+                        <input type="text" id="personnel-position" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">项目经验数</label>
+                        <input type="number" id="personnel-experience" min="0" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">工作年限</label>
+                        <input type="number" id="personnel-years" min="0" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">最大可承担项目数</label>
+                        <input type="number" id="personnel-max-projects" min="1" value="3" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <!-- 熟悉技能（与项目工艺匹配） -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">熟悉技能</label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+                        <!-- 脱硫工艺 -->
+                        <div>
+                            <h5 class="font-medium text-orange-700 mb-2 text-sm">脱硫工艺</h5>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="skills" value="dry_desulfurization" class="rounded text-orange-600 mr-2">
+                                    <span class="text-sm">干法脱硫</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="skills" value="wet_desulfurization" class="rounded text-orange-600 mr-2">
+                                    <span class="text-sm">湿法脱硫</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="skills" value="biological_desulfurization" class="rounded text-orange-600 mr-2">
+                                    <span class="text-sm">生物脱硫</span>
+                                </label>
+                            </div>
+                        </div>
+                        <!-- 脱碳工艺 -->
+                        <div>
+                            <h5 class="font-medium text-blue-700 mb-2 text-sm">脱碳工艺</h5>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="skills" value="psa" class="rounded text-blue-600 mr-2">
+                                    <span class="text-sm">PSA变压吸附</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="skills" value="membrane" class="rounded text-blue-600 mr-2">
+                                    <span class="text-sm">膜分离</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="skills" value="chemical_absorption" class="rounded text-blue-600 mr-2">
+                                    <span class="text-sm">化学吸收</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 自定义技能 -->
+                    <div class="mt-3">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">其他技能（用逗号分隔）</label>
+                        <input type="text" id="personnel-custom-skills" placeholder="例如：电气自动化, PLC编程, 安全管理" 
+                               class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">能力评估 (1-10分)</label>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <label class="text-xs text-gray-500">技术能力</label>
+                            <input type="range" id="capability-technical" min="1" max="10" value="5" class="w-full">
+                            <span id="capability-technical-value" class="text-sm">5</span>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500">管理能力</label>
+                            <input type="range" id="capability-management" min="1" max="10" value="5" class="w-full">
+                            <span id="capability-management-value" class="text-sm">5</span>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500">协调能力</label>
+                            <input type="range" id="capability-coordination" min="1" max="10" value="5" class="w-full">
+                            <span id="capability-coordination-value" class="text-sm">5</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">联系电话</label>
+                        <input type="tel" id="personnel-phone" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">邮箱</label>
+                        <input type="email" id="personnel-email" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-4">
+                    <button type="button" onclick="app.closePersonnelModal()" class="px-6 py-2 border rounded-lg hover:bg-gray-100 transition">取消</button>
+                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-save mr-2"></i>保存
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 部门管理弹窗 -->
+    <div id="department-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg m-4">
+            <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-purple-700">
+                    <i class="fas fa-sitemap mr-2"></i>部门管理
+                </h3>
+                <button onclick="app.closeDepartmentModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <!-- 添加新部门 -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">添加新部门</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="new-department-name" placeholder="输入部门名称" 
+                               class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <button onclick="app.addDepartment()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                            <i class="fas fa-plus"></i> 添加
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 部门列表 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">现有部门</label>
+                    <div id="department-list" class="space-y-2 max-h-[300px] overflow-y-auto">
+                        <!-- 动态填充 -->
+                    </div>
+                </div>
+            </div>
+            <div class="border-t px-6 py-4 flex justify-end">
+                <button onclick="app.closeDepartmentModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-100 transition">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 项目详情弹窗 -->
+    <div id="project-detail-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto m-4">
+            <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+                <h3 class="text-xl font-bold" id="detail-project-name">项目详情</h3>
+                <button onclick="app.closeProjectDetailModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="project-detail-content" class="p-6">
+                <!-- 动态填充 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 智能推荐弹窗 -->
+    <div id="recommendation-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4">
+            <div class="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-purple-700">
+                    <i class="fas fa-lightbulb mr-2"></i>智能推荐
+                </h3>
+                <button onclick="app.closeRecommendationModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="recommendation-content" class="p-6">
+                <!-- 动态填充 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-gray-400 py-6 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p>沼气提纯站项目全生命周期管理系统 &copy; 2026</p>
+            <p class="text-sm mt-1">清科威创 · 企业级项目管理解决方案</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript 模块 -->
+    <script src="js/utils.js"></script>
+    <script src="js/districtCoordinates.js"></script>
+    <script src="js/dataStore.js"></script>
+    <script src="js/projectManager.js"></script>
+    <script src="js/personnelManager.js"></script>
+    <script src="js/mapVisualization.js"></script>
+    <script src="js/ganttChart.js"></script>
+    <script src="js/smartRecommendation.js"></script>
+    <script src="js/excelExporter.js"></script>
+    <script src="js/dataImporter.js"></script>
+    <script src="js/assessmentPage.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/systemTest.js"></script>
+    
+    <!-- 地图诊断脚本 -->
+    <script>
+        // 页面加载完成后测试高德地图
+        window.addEventListener('load', function() {
+            console.log('=== 地图诊断开始 ===');
+            console.log('1. AMap对象存在:', typeof AMap !== 'undefined');
+            
+            if (typeof AMap !== 'undefined') {
+                console.log('2. AMap.Map存在:', typeof AMap.Map !== 'undefined');
+                console.log('3. AMap.CircleMarker存在:', typeof AMap.CircleMarker !== 'undefined');
+                
+                // 尝试创建一个测试地图
+                try {
+                    var testContainer = document.createElement('div');
+                    testContainer.style.cssText = 'position:absolute;left:-9999px;width:100px;height:100px;';
+                    document.body.appendChild(testContainer);
+                    
+                    var testMap = new AMap.Map(testContainer, {
+                        zoom: 10,
+                        center: [116.4, 39.9]
+                    });
+                    
+                    console.log('4. 测试地图创建成功:', testMap ? '是' : '否');
+                    testMap.destroy();
+                    document.body.removeChild(testContainer);
+                    console.log('=== 地图诊断通过 ===');
+                } catch(e) {
+                    console.error('4. 测试地图创建失败:', e.message);
+                    console.log('=== 地图诊断失败 ===');
+                }
+            } else {
+                console.error('高德地图API未加载！');
+                console.log('请检查:');
+                console.log('- 网络连接是否正常');
+                console.log('- 是否有防火墙阻止访问 webapi.amap.com');
+                console.log('- API Key是否正确');
+            }
+        });
+    </script>
+
+<style>
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.inland-security-footer {
+  position: fixed;
+  z-index: 10;
+  bottom: 0;
+  right: 0;
+  width: fit-content;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.tooltip-container {
+  position: relative;
+}
+
+.trigger-content {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  background-color: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.minimax-link {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 300;
+  color: #adadad;
+  text-decoration: none;
+}
+
+.minimax-link:visited {
+  color: #adadad;
+}
+
+.minimax-link:hover {
+  color: #666666;
+}
+
+.tooltip-content {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  padding-bottom: 16px; /* 8px 内容间距 + 8px 用于鼠标移动的透明区域 */
+  font-size: 12px;
+  line-height: 17px;
+  background-color: #fafafa;
+  border-radius: 12px;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  color: #171717;
+}
+
+/* 创建透明的连接区域，让鼠标可以平滑移动到 tooltip */
+.tooltip-content::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  right: 0;
+  height: 16px;
+}
+
+.tooltip-container:hover .tooltip-content {
+  display: flex;
+}
+
+.info-section {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.beian-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #171717;
+}
+
+.beian-icon {
+  width: 14px;
+  height: 14px;
+  margin-right: 2px;
+}
+
+.underline-text {
+  color: #171717;
+  text-decoration: underline;
+}
+
+.underline-text:hover {
+  color: #000000;
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+  .trigger-content {
+    background-color: transparent;
+  }
+
+  .minimax-link,
+  .minimax-link:visited {
+    color: #666666;
+  }
+
+  .minimax-link:hover {
+    color: #adadad;
+  }
+
+  .tooltip-content {
+    background-color: #262626;
+    color: #ededed;
+  }
+
+  .beian-link,
+  .underline-text {
+    color: #ededed;
+  }
+
+  .underline-text:hover {
+    color: #ffffff;
+  }
+}
+
+</style>
+<div class="inland-security-footer">
+  <div class="tooltip-container">
+    <div class="trigger-content">
+      <a href="https://www.minimaxi.com/" target="_blank" rel="noreferrer" class="minimax-link">
+        <span>© 2026 MiniMax</span>
+      </a>
+    </div>
+    <div class="tooltip-content">
+      <section class="info-section">
+        <span>上海稀宇科技有限公司</span>
+      </section>
+
+      <section class="info-section">
+        <a class="beian-link" href="https://www.beian.gov.cn/portal/registerSystemInfo?recordcode=31010402010179" target="_blank" rel="noreferrer">
+          <img alt="hailuo-beian-icon" src="https://cdn.hailuoai.com/hailuo-video-web/public_assets/223037d3-79fd-4db0-a456-749f38a6a14b.png" class="beian-icon">
+          <span class="underline-text">沪公网安备31010402010179号</span>
+        </a>
+        <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer" class="underline-text">
+          沪ICP备2023003282号-38
+        </a>
+      </section>
+
+      <section class="info-section">
+        <span>模型名称：MiniMax</span>
+        <span>备案号：Shanghai-MiniMax-202505230046</span>
+      </section>
+
+      <section class="info-section">
+        <a href="https://agent.minimaxi.com/doc/zh/terms-of-service.html" target="_blank" rel="noreferrer" class="underline-text">
+          用户协议
+        </a>
+        <a href="https://agent.minimaxi.com/doc/zh/privacy-policy.html" target="_blank" rel="noreferrer" class="underline-text">
+          隐私政策
+        </a>
+      </section>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
