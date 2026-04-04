@@ -169,84 +169,65 @@ const dataStore = {
     },
 
     /**
-     * 同步单个项目到云端
+     * 同步单个项目到云端（使用UPSERT，不会产生重复）
      */
     async syncProjectToCloud(project) {
         try {
-            // 检查是否已存在
-            const existing = await supabaseClient.get('projects');
-            const exists = existing && existing.find(p => p.id === project.id);
+            // 使用 UPSERT，无论是新建还是更新都使用同一操作
+            const cloudData = {
+                id: project.id,
+                name: project.name,
+                location: project.location || {},
+                scale: project.scale || {},
+                costs: project.costs || {},
+                lifecycle: project.lifecycle || {},
+                notes: project.notes || ''
+            };
 
-            if (exists) {
-                // 更新
-                await supabaseClient.patch('projects', {
-                    name: project.name,
-                    location: project.location,
-                    scale: project.scale,
-                    costs: project.costs,
-                    lifecycle: project.lifecycle,
-                    notes: project.notes
-                }, 'id', project.id);
+            const result = await supabaseClient.upsert('projects', cloudData);
+            if (result.success) {
+                console.log(`[DataStore] 项目同步成功: ${project.name}`);
             } else {
-                // 新建
-                await supabaseClient.post('projects', {
-                    id: project.id,
-                    name: project.name,
-                    location: project.location,
-                    scale: project.scale,
-                    costs: project.costs,
-                    lifecycle: project.lifecycle,
-                    notes: project.notes
-                });
+                console.error(`[DataStore] 项目同步失败: ${project.name}`, result.error);
             }
+            return result;
         } catch (error) {
             console.error('[DataStore] 同步项目失败:', project.name, error);
+            return { success: false, error: error.message };
         }
     },
 
     /**
-     * 同步单个人员到云端
+     * 同步单个人员到云端（使用UPSERT，不会产生重复）
      */
     async syncPersonnelToCloud(person) {
         try {
-            // 检查是否已存在
-            const existing = await supabaseClient.get('personnel');
-            const exists = existing && existing.find(p => p.id === person.id);
+            // 使用 UPSERT，无论是新建还是更新都使用同一操作
+            const cloudData = {
+                id: person.id,
+                name: person.name,
+                gender: person.gender || '男',
+                age: person.age,
+                department: person.department || '',
+                position: person.position || '',
+                experience: person.experience || { projectCount: 0, years: 0, processes: [] },
+                custom_skills: person.customSkills || [],
+                capabilities: person.capabilities || { technical: 5, management: 5, coordination: 5 },
+                max_projects: person.maxProjects || 3,
+                contact: person.contact || {},
+                current_projects: person.currentProjects || []
+            };
 
-            if (exists) {
-                // 更新
-                await supabaseClient.patch('personnel', {
-                    name: person.name,
-                    gender: person.gender,
-                    age: person.age,
-                    department: person.department,
-                    position: person.position,
-                    experience: person.experience,
-                    custom_skills: person.customSkills,
-                    capabilities: person.capabilities,
-                    max_projects: person.maxProjects,
-                    contact: person.contact,
-                    current_projects: person.currentProjects
-                }, 'id', person.id);
+            const result = await supabaseClient.upsert('personnel', cloudData);
+            if (result.success) {
+                console.log(`[DataStore] 人员同步成功: ${person.name}`);
             } else {
-                // 新建
-                await supabaseClient.post('personnel', {
-                    id: person.id,
-                    name: person.name,
-                    gender: person.gender,
-                    age: person.age,
-                    department: person.department,
-                    position: person.position,
-                    experience: person.experience,
-                    custom_skills: person.customSkills,
-                    capabilities: person.capabilities,
-                    max_projects: person.maxProjects,
-                    contact: person.contact,
-                    current_projects: person.currentProjects
-                });
+                console.error(`[DataStore] 人员同步失败: ${person.name}`, result.error);
             }
+            return result;
         } catch (error) {
             console.error('[DataStore] 同步人员失败:', person.name, error);
+            return { success: false, error: error.message };
         }
     },
 
