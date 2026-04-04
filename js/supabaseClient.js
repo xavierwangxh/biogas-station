@@ -5,7 +5,7 @@
 
 // Supabase 配置
 const SUPABASE_URL = 'https://pwxrijygugjxhpcjveef.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3eHJpeWd1Z2p4aHBjamV2ZWYiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTY0Njc5NjgxNSwiZXhwIjoxOTYyMzcyODE1fQ.COZ6DpNd7sAWTGqJVQqLvjSRRCIyXXiC5wWLpMfD1xo';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3eHJpanlndWdqeGhwY2p2ZWVmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyOTk2NTQsImV4cCI6MjA5MDg3NTY1NH0.fqzq0WFzHhoOPw4wcuQ1zyC0sSP26T1au4hrqFL_IZ8';
 
 // 简单的 Supabase REST API 客户端（不依赖外部库）
 const supabaseClient = {
