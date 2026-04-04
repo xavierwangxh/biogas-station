@@ -118,6 +118,56 @@ const supabaseClient = {
             console.error(`[Supabase] DELETE ${table} error:`, error);
             return { success: false, error: error.message };
         }
+    },
+
+    /**
+     * 执行 UPSERT 请求（插入或更新）
+     * 这是最可靠的同步方法，不会产生重复记录
+     */
+    async upsert(table, data) {
+        try {
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+                method: 'POST',
+                headers: {
+                    'apikey': SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'resolution=merge-duplicates'
+                },
+                body: JSON.stringify(data)
+            });
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error(`[Supabase] UPSERT ${table} error:`, response.status, errorText);
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
+            const result = await response.json();
+            console.log(`[Supabase] UPSERT ${table} success:`, result);
+            return { success: true, data: result };
+        } catch (error) {
+            console.error(`[Supabase] UPSERT ${table} error:`, error);
+            return { success: false, error: error.message };
+        }
+    },
+
+    /**
+     * 根据ID查询单条记录
+     */
+    async getById(table, id) {
+        try {
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${encodeURIComponent(id)}&select=*`, {
+                headers: {
+                    'apikey': SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                }
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const result = await response.json();
+            return result.length > 0 ? result[0] : null;
+        } catch (error) {
+            console.error(`[Supabase] getById ${table} error:`, error);
+            return null;
+        }
     }
 };
 
