@@ -1,0 +1,279 @@
+{
+  "projects": [
+    {
+      "id": "proj_001",
+      "name": "山东潍坊沼气提纯站",
+      "location": {
+        "province": "山东省",
+        "city": "潍坊市",
+        "district": "奎文区",
+        "address": "奎文区工业园路1号",
+        "longitude": 119.1619,
+        "latitude": 36.7089
+      },
+      "scale": {
+        "designCapacity": 5000,
+        "dailyOutput": 12,
+        "processType": "PSA"
+      },
+      "costs": {
+        "electricityPrice": 0.6,
+        "steamPrice": 200
+      },
+      "lifecycle": {
+        "tracking": {
+          "startDate": "2025-01-01",
+          "endDate": "2025-01-31",
+          "leaderId": "person_001",
+          "status": "completed"
+        },
+        "contract": {
+          "startDate": "2025-02-01",
+          "endDate": "2025-02-28",
+          "leaderId": "person_001",
+          "status": "completed"
+        },
+        "procedure": {
+          "startDate": "2025-03-01",
+          "endDate": "2025-06-30",
+          "leaderId": "person_002",
+          "status": "ongoing"
+        },
+        "construction": {
+          "startDate": "2025-07-01",
+          "endDate": "2025-11-30",
+          "leaderId": null,
+          "status": "pending"
+        },
+        "operation": {
+          "startDate": "2025-12-01",
+          "endDate": null,
+          "leaderId": null,
+          "status": "pending"
+        }
+      },
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-03-01T00:00:00.000Z"
+    },
+    {
+      "id": "proj_002",
+      "name": "河北唐山沼气提纯站",
+      "location": {
+        "province": "河北省",
+        "city": "唐山市",
+        "district": "路北区",
+        "address": "路北区能源大道88号",
+        "longitude": 118.1812,
+        "latitude": 39.6292
+      },
+      "scale": {
+        "designCapacity": 8000,
+        "dailyOutput": 20,
+        "processType": "membrane"
+      },
+      "costs": {
+        "electricityPrice": 0.55,
+        "steamPrice": 180
+      },
+      "lifecycle": {
+        "tracking": {
+          "startDate": "2025-02-01",
+          "endDate": "2025-02-28",
+          "leaderId": "person_003",
+          "status": "completed"
+        },
+        "contract": {
+          "startDate": "2025-03-01",
+          "endDate": "2025-03-31",
+          "leaderId": "person_003",
+          "status": "ongoing"
+        },
+        "procedure": {
+          "startDate": "2025-04-01",
+          "endDate": "2025-07-31",
+          "leaderId": null,
+          "status": "pending"
+        },
+        "construction": {
+          "startDate": "2025-08-01",
+          "endDate": "2025-12-31",
+          "leaderId": null,
+          "status": "pending"
+        },
+        "operation": {
+          "startDate": "2026-01-01",
+          "endDate": null,
+          "leaderId": null,
+          "status": "pending"
+        }
+      },
+      "createdAt": "2025-02-01T00:00:00.000Z",
+      "updatedAt": "2025-03-01T00:00:00.000Z"
+    },
+    {
+      "id": "proj_003",
+      "name": "河南郑州沼气提纯站",
+      "location": {
+        "province": "河南省",
+        "city": "郑州市",
+        "district": "金水区",
+        "address": "金水区环保路66号",
+        "longitude": 113.6253,
+        "latitude": 34.7466
+      },
+      "scale": {
+        "designCapacity": 6000,
+        "dailyOutput": 15,
+        "processType": "PSA"
+      },
+      "costs": {
+        "electricityPrice": 0.58,
+        "steamPrice": 190
+      },
+      "lifecycle": {
+        "tracking": {
+          "startDate": "2025-01-15",
+          "endDate": "2025-02-14",
+          "leaderId": "person_002",
+          "status": "completed"
+        },
+        "contract": {
+          "startDate": "2025-02-15",
+          "endDate": "2025-03-15",
+          "leaderId": "person_002",
+          "status": "completed"
+        },
+        "procedure": {
+          "startDate": "2025-03-16",
+          "endDate": "2025-07-15",
+          "leaderId": "person_001",
+          "status": "ongoing"
+        },
+        "construction": {
+          "startDate": "2025-07-16",
+          "endDate": "2025-12-15",
+          "leaderId": null,
+          "status": "pending"
+        },
+        "operation": {
+          "startDate": "2025-12-16",
+          "endDate": null,
+          "leaderId": null,
+          "status": "pending"
+        }
+      },
+      "createdAt": "2025-01-15T00:00:00.000Z",
+      "updatedAt": "2025-03-01T00:00:00.000Z"
+    },
+    {
+      "id": "proj_004",
+      "name": "江苏徐州沼气提纯站",
+      "location": {
+        "province": "江苏省",
+        "city": "徐州市",
+        "district": "鼓楼区",
+        "address": "鼓楼区新能源路99号",
+        "longitude": 117.1848,
+        "latitude": 34.2618
+      },
+      "scale": {
+        "designCapacity": 10000,
+        "dailyOutput": 25,
+        "processType": "cryogenic"
+      },
+      "costs": {
+        "electricityPrice": 0.62,
+        "steamPrice": 210
+      },
+      "lifecycle": {
+        "tracking": {
+          "startDate": "2025-03-01",
+          "endDate": "2025-03-31",
+          "leaderId": null,
+          "status": "ongoing"
+        },
+        "contract": {
+          "startDate": null,
+          "endDate": null,
+          "leaderId": null,
+          "status": "pending"
+        },
+        "procedure": {
+          "startDate": null,
+          "endDate": null,
+          "leaderId": null,
+          "status": "pending"
+        },
+        "construction": {
+          "startDate": null,
+          "endDate": null,
+          "leaderId": null,
+          "status": "pending"
+        },
+        "operation": {
+          "startDate": null,
+          "endDate": null,
+          "leaderId": null,
+          "status": "pending"
+        }
+      },
+      "createdAt": "2025-03-01T00:00:00.000Z",
+      "updatedAt": "2025-03-01T00:00:00.000Z"
+    },
+    {
+      "id": "proj_005",
+      "name": "安徽合肥沼气提纯站",
+      "location": {
+        "province": "安徽省",
+        "city": "合肥市",
+        "district": "蜀山区",
+        "address": "蜀山区清洁能源路77号",
+        "longitude": 117.2272,
+        "latitude": 31.8206
+      },
+      "scale": {
+        "designCapacity": 4500,
+        "dailyOutput": 10,
+        "processType": "PSA"
+      },
+      "costs": {
+        "electricityPrice": 0.57,
+        "steamPrice": 185
+      },
+      "lifecycle": {
+        "tracking": {
+          "startDate": "2024-12-01",
+          "endDate": "2024-12-31",
+          "leaderId": "person_003",
+          "status": "completed"
+        },
+        "contract": {
+          "startDate": "2025-01-01",
+          "endDate": "2025-01-31",
+          "leaderId": "person_003",
+          "status": "completed"
+        },
+        "procedure": {
+          "startDate": "2025-02-01",
+          "endDate": "2025-05-31",
+          "leaderId": "person_002",
+          "status": "completed"
+        },
+        "construction": {
+          "startDate": "2025-06-01",
+          "endDate": "2025-10-31",
+          "leaderId": "person_001",
+          "status": "ongoing"
+        },
+        "operation": {
+          "startDate": "2025-11-01",
+          "endDate": null,
+          "leaderId": null,
+          "status": "pending"
+        }
+      },
+      "createdAt": "2024-12-01T00:00:00.000Z",
+      "updatedAt": "2025-03-01T00:00:00.000Z"
+    }
+  ]
+}
