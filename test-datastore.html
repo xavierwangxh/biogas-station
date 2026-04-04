@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据保存测试 - 沼气提纯站项目管理系统</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .test-section { background: #f5f5f5; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .test-result { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #333; color: #fff; padding: 10px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background: #4CAF50; color: white; }
+    </style>
+</head>
+<body>
+    <h1>🧪 沼气提纯站项目管理系统 - 数据保存测试</h1>
+    
+    <div class="test-section">
+        <h2>测试控制面板</h2>
+        <button onclick="runAllTests()">运行全部测试</button>
+        <button onclick="clearLocalStorage()">清空 LocalStorage</button>
+        <button onclick="loadSampleData()">加载示例数据</button>
+        <button onclick="checkDataStore()">检查 DataStore 状态</button>
+    </div>
+
+    <div class="test-section">
+        <h2>测试结果</h2>
+        <div id="test-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>LocalStorage 原始数据</h2>
+        <pre id="localstorage-data"></pre>
+    </div>
+
+    <script>
+        // 测试结果记录
+        const testResults = [];
+
+        function log(message, type = 'info') {
+            const resultsDiv = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = `<strong>[${new Date().toLocaleTimeString()}]</strong> ${message}`;
+            resultsDiv.appendChild(div);
+            testResults.push({ time: new Date(), message, type });
+        }
+
+        function showLocalStorage() {
+            const data = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                try {
+                    data[key] = JSON.parse(localStorage.getItem(key));
+                } catch (e) {
+                    data[key] = localStorage.getItem(key);
+                }
+            }
+            document.getElementById('localstorage-data').textContent = JSON.stringify(data, null, 2);
+        }
+
+        // ==================== 测试用例 ====================
+
+        // 测试1: 检查 LocalStorage 键名
+        function testStorageKeys() {
+            log('=== 测试1: 检查 LocalStorage 键名 ===', 'info');
+            
+            const expectedKeys = ['biogas_projects', 'biogas_personnel', 'biogas_project_groups', 'biogas_settings', 'biogas_data_version'];
+            const actualKeys = Object.keys(localStorage);
+            
+            log(`预期键名: ${expectedKeys.join(', ')}`, 'info');
+            log(`实际键名: ${actualKeys.join(', ') || '(空)'}`, 'info');
+            
+            // 检查是否有我们的数据
+            const hasProjectData = actualKeys.includes('biogas_projects');
+            const hasPersonnelData = actualKeys.includes('biogas_personnel');
+            
+            if (hasProjectData || hasPersonnelData) {
+                log('✅ LocalStorage 中存在系统数据', 'success');
+            } else {
+                log('⚠️ LocalStorage 中没有系统数据，需要初始化', 'error');
+            }
+            
+            return hasProjectData || hasPersonnelData;
+        }
+
+        // 测试2: 测试 DataStore 初始化
+        function testDataStoreInit() {
+            log('=== 测试2: 测试 DataStore 初始化 ===', 'info');
+            
+            try {
+                // 检查 dataStore 对象是否存在
+                if (typeof dataStore === 'undefined') {
+                    log('❌ dataStore 对象未定义', 'error');
+                    return false;
+                }
+                
+                log('✅ dataStore 对象存在', 'success');
+                
+                // 测试 init 方法
+                if (typeof dataStore.init === 'function') {
+                    dataStore.init();
+                    log('✅ dataStore.init() 调用成功', 'success');
+                } else {
+                    log('❌ dataStore.init 不是函数', 'error');
+                    return false;
+                }
+                
+                // 检查数据版本
+                const version = localStorage.getItem('biogas_data_version');
+                log(`数据版本: ${version || '未设置'}`, version ? 'success' : 'error');
+                
+                return true;
+            } catch (e) {
+                log(`❌ DataStore 初始化失败: ${e.message}`, 'error');
+                return false;
+            }
+        }
+
+        // 测试3: 测试项目保存
+        function testProjectSave() {
+            log('=== 测试3: 测试项目保存 ===', 'info');
+            
+            try {
+                const testProject = {
+                    name: '测试项目-' + Date.now(),
+                    location: {
+                        province: '山东省',
+                        city: '济南市',
+                        district: '历下区',
+                        address: '测试地址123号',
+                        longitude: 117.0,
+                        latitude: 36.65
+                    },
+                    scale: {
+                        designCapacity: 5000,
+                        dailyOutput: 12,
+                        processes: ['psa', 'dry_desulfurization'],
+                        processType: 'psa'
+                    },
+                    costs: {
+                        electricityPrice: 0.6,
+                        steamPrice: 200
+                    },
+                    notes: '这是一个测试项目',
+                    lifecycle: {
+                        tracking: { startDate: '2025-01-01', endDate: '2025-01-31', status: 'completed' },
+                        contract: { startDate: '2025-02-01', endDate: '2025-02-28', status: 'ongoing' }
+                    }
+                };
+                
+                // 调用 saveProject
+                const saved = dataStore.saveProject(testProject);
+                
+                if (saved && saved.id) {
+                    log(`✅ 项目保存成功，ID: ${saved.id}`, 'success');
+                    
+                    // 验证是否能读取
+                    const retrieved = dataStore.getProject(saved.id);
+                    if (retrieved && retrieved.name === testProject.name) {
+                        log('✅ 项目读取验证成功', 'success');
+                        return true;
+                    } else {
+                        log('❌ 项目读取验证失败', 'error');
+                        return false;
+                    }
+                } else {
+                    log('❌ 项目保存失败: 未返回有效对象', 'error');
+                    return false;
+                }
+            } catch (e) {
+                log(`❌ 项目保存测试失败: ${e.message}`, 'error');
+                console.error(e);
+                return false;
+            }
+        }
+
+        // 测试4: 测试项目更新
+        function testProjectUpdate() {
+            log('=== 测试4: 测试项目更新 ===', 'info');
+            
+            try {
+                // 先获取一个现有项目
+                const projects = dataStore.getAllProjects();
+                if (projects.length === 0) {
+                    log('❌ 没有现有项目可更新，先运行保存测试', 'error');
+                    return false;
+                }
+                
+                const project = projects[0];
+                const originalName = project.name;
+                const newName = originalName + '-已更新';
+                
+                // 更新项目
+                project.name = newName;
+                const updated = dataStore.saveProject(project);
+                
+                if (updated && updated.name === newName) {
+                    log(`✅ 项目更新成功: ${originalName} -> ${newName}`, 'success');
+                    
+                    // 验证更新是否持久化
+                    const retrieved = dataStore.getProject(project.id);
+                    if (retrieved && retrieved.name === newName) {
+                        log('✅ 项目更新持久化验证成功', 'success');
+                        return true;
+                    } else {
+                        log('❌ 项目更新持久化验证失败', 'error');
+                        return false;
+                    }
+                } else {
+                    log('❌ 项目更新失败', 'error');
+                    return false;
+                }
+            } catch (e) {
+                log(`❌ 项目更新测试失败: ${e.message}`, 'error');
+                console.error(e);
+                return false;
+            }
+        }
+
+        // 测试5: 测试项目删除
+        function testProjectDelete() {
+            log('=== 测试5: 测试项目删除 ===', 'info');
+            
+            try {
+                // 先创建一个新项目用于删除测试
+                const testProject = {
+                    name: '删除测试项目-' + Date.now(),
+                    location: { province: '测试省', city: '测试市', district: '测试区', address: '测试地址' },
+                    scale: { designCapacity: 1000, dailyOutput: 5, processes: ['psa'], processType: 'psa' },
+                    lifecycle: { tracking: { startDate: '2025-01-01', endDate: '2025-01-31' } }
+                };
+                
+                const saved = dataStore.saveProject(testProject);
+                const id = saved.id;
+                
+                log(`创建测试项目 ID: ${id}`, 'info');
+                
+                // 删除项目
+                const deleted = dataStore.deleteProject(id);
+                
+                if (deleted) {
+                    log('✅ 项目删除返回成功', 'success');
+                    
+                    // 验证是否已删除
+                    const retrieved = dataStore.getProject(id);
+                    if (!retrieved) {
+                        log('✅ 项目删除验证成功（已无法读取）', 'success');
+                        return true;
+                    } else {
+                        log('❌ 项目删除验证失败（仍能读取）', 'error');
+                        return false;
+                    }
+                } else {
+                    log('❌ 项目删除返回失败', 'error');
+                    return false;
+                }
+            } catch (e) {
+                log(`❌ 项目删除测试失败: ${e.message}`, 'error');
+                console.error(e);
+                return false;
+            }
+        }
+
+        // 测试6: 测试人员保存
+        function testPersonnelSave() {
+            log('=== 测试6: 测试人员保存 ===', 'info');
+            
+            try {
+                const testPerson = {
+                    name: '测试人员-' + Date.now(),
+                    gender: '男',
+                    age: 30,
+                    department: '工程部',
+                    position: '工程师',
+                    experience: {
+                        projectCount: 5,
+                        years: 3,
+                        processes: ['psa', 'membrane']
+                    },
+                    capabilities: {
+                        technical: 8,
+                        management: 7,
+                        coordination: 6
+                    },
+                    maxProjects: 3,
+                    contact: {
+                        phone: '13800138000',
+                        email: 'test@example.com'
+                    }
+                };
+                
+                const saved = dataStore.savePersonnel(testPerson);
+                
+                if (saved && saved.id) {
+                    log(`✅ 人员保存成功，ID: ${saved.id}`, 'success');
+                    
+                    const retrieved = dataStore.getPersonnel(saved.id);
+                    if (retrieved && retrieved.name === testPerson.name) {
+                        log('✅ 人员读取验证成功', 'success');
+                        return true;
+                    } else {
+                        log('❌ 人员读取验证失败', 'error');
+                        return false;
+                    }
+                } else {
+                    log('❌ 人员保存失败', 'error');
+                    return false;
+                }
+            } catch (e) {
+                log(`❌ 人员保存测试失败: ${e.message}`, 'error');
+                console.error(e);
+                return false;
+            }
+        }
+
+        // 测试7: 测试数据序列化
+        function testSerialization() {
+            log('=== 测试7: 测试数据序列化 ===', 'info');
+            
+            try {
+                const testData = {
+                    string: 'test',
+                    number: 123,
+                    boolean: true,
+                    array: [1, 2, 3],
+                    object: { a: 1, b: 2 },
+                    date: new Date().toISOString(),
+                    null: null
+                };
+                
+                // 测试序列化
+                const serialized = JSON.stringify(testData);
+                log(`序列化成功，长度: ${serialized.length}`, 'success');
+                
+                // 测试反序列化
+                const deserialized = JSON.parse(serialized);
+                
+                // 验证数据完整性
+                let allMatch = true;
+                for (const key in testData) {
+                    if (JSON.stringify(testData[key]) !== JSON.stringify(deserialized[key])) {
+                        allMatch = false;
+                        log(`❌ 字段 ${key} 不匹配`, 'error');
+                    }
+                }
+                
+                if (allMatch) {
+                    log('✅ 数据序列化/反序列化测试通过', 'success');
+                    return true;
+                }
+                return false;
+            } catch (e) {
+                log(`❌ 序列化测试失败: ${e.message}`, 'error');
+                return false;
+            }
+        }
+
+        // 测试8: 测试 LocalStorage 容量
+        function testStorageCapacity() {
+            log('=== 测试8: 测试 LocalStorage 容量 ===', 'info');
+            
+            try {
+                let totalSize = 0;
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    const value = localStorage.getItem(key);
+                    totalSize += key.length + value.length;
+                }
+                
+                // UTF-16 编码，每个字符2字节
+                const sizeInKB = (totalSize * 2 / 1024).toFixed(2);
+                log(`LocalStorage 当前使用: ${sizeInKB} KB`, 'info');
+                
+                // 一般浏览器限制为 5-10 MB
+                if (totalSize * 2 < 5 * 1024 * 1024) {
+                    log('✅ 存储空间充足', 'success');
+                    return true;
+                } else {
+                    log('⚠️ 存储空间接近上限', 'error');
+                    return false;
+                }
+            } catch (e) {
+                log(`❌ 存储容量测试失败: ${e.message}`, 'error');
+                return false;
+            }
+        }
+
+        // ==================== 控制函数 ====================
+
+        function runAllTests() {
+            document.getElementById('test-results').innerHTML = '';
+            testResults.length = 0;
+            
+            log('<h3>开始运行全部测试...</h3>', 'info');
+            
+            const results = [];
+            
+            setTimeout(() => {
+                results.push(testStorageKeys());
+                showLocalStorage();
+                
+                setTimeout(() => {
+                    results.push(testDataStoreInit());
+                    showLocalStorage();
+                    
+                    setTimeout(() => {
+                        results.push(testProjectSave());
+                        showLocalStorage();
+                        
+                        setTimeout(() => {
+                            results.push(testProjectUpdate());
+                            showLocalStorage();
+                            
+                            setTimeout(() => {
+                                results.push(testProjectDelete());
+                                showLocalStorage();
+                                
+                                setTimeout(() => {
+                                    results.push(testPersonnelSave());
+                                    showLocalStorage();
+                                    
+                                    setTimeout(() => {
+                                        results.push(testSerialization());
+                                        
+                                        setTimeout(() => {
+                                            results.push(testStorageCapacity());
+                                            
+                                            // 显示总结
+                                            const passed = results.filter(r => r).length;
+                                            const total = results.length;
+                                            log(`<h3>测试完成: ${passed}/${total} 通过</h3>`, passed === total ? 'success' : 'error');
+                                        }, 100);
+                                    }, 100);
+                                }, 100);
+                            }, 100);
+                        }, 100);
+                    }, 100);
+                }, 100);
+            }, 100);
+        }
+
+        function clearLocalStorage() {
+            localStorage.clear();
+            log('✅ LocalStorage 已清空', 'success');
+            showLocalStorage();
+        }
+
+        function loadSampleData() {
+            log('加载示例数据...', 'info');
+            
+            const sampleProjects = [
+                {
+                    id: 'proj_' + Date.now(),
+                    name: '山东潍坊沼气提纯站',
+                    location: { province: '山东省', city: '潍坊市', district: '奎文区', address: '奎文区工业园路1号', longitude: 119.1619, latitude: 36.7089 },
+                    scale: { designCapacity: 5000, dailyOutput: 12, processes: ['dry_desulfurization', 'psa'], processType: 'psa' },
+                    costs: { electricityPrice: 0.6, steamPrice: 200 },
+                    notes: '首个示范项目',
+                    lifecycle: {
+                        tracking: { startDate: '2025-01-01', endDate: '2025-01-31', status: 'completed' },
+                        contract: { startDate: '2025-02-01', endDate: '2025-02-28', status: 'completed' },
+                        procedure: { startDate: '2025-03-01', endDate: '2025-06-30', status: 'ongoing' }
+                    }
+                }
+            ];
+            
+            const samplePersonnel = [
+                {
+                    id: 'pers_' + Date.now(),
+                    name: '张伟',
+                    gender: '男',
+                    age: 38,
+                    department: '工程部',
+                    position: '项目经理',
+                    experience: { projectCount: 15, years: 12, processes: ['psa', 'membrane'] },
+                    capabilities: { technical: 9, management: 8, coordination: 8 },
+                    maxProjects: 4,
+                    contact: { phone: '13800138001', email: 'zhangwei@example.com' },
+                    currentProjects: []
+                }
+            ];
+            
+            localStorage.setItem('biogas_projects', JSON.stringify(sampleProjects));
+            localStorage.setItem('biogas_personnel', JSON.stringify(samplePersonnel));
+            localStorage.setItem('biogas_data_version', '1.0.0');
+            
+            log('✅ 示例数据已加载', 'success');
+            showLocalStorage();
+        }
+
+        function checkDataStore() {
+            log('=== 检查 DataStore 状态 ===', 'info');
+            
+            if (typeof dataStore === 'undefined') {
+                log('❌ dataStore 未定义', 'error');
+                return;
+            }
+            
+            log('dataStore 对象存在', 'success');
+            log(`方法列表: ${Object.keys(dataStore).join(', ')}`, 'info');
+            
+            const projects = dataStore.getAllProjects();
+            const personnel = dataStore.getAllPersonnel();
+            
+            log(`项目数量: ${projects.length}`, 'info');
+            log(`人员数量: ${personnel.length}`, 'info');
+            
+            if (projects.length > 0) {
+                log(`第一个项目: ${projects[0].name}`, 'info');
+            }
+            if (personnel.length > 0) {
+                log(`第一个人: ${personnel[0].name}`, 'info');
+            }
+        }
+
+        // 页面加载时显示 LocalStorage 状态
+        window.onload = function() {
+            showLocalStorage();
+        };
+    </script>
+
+    <!-- 引入原始系统的 dataStore.js -->
+    <script src="js/dataStore.js"></script>
+    <script src="js/dataStore.test.js"></script>
+
+<style>
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.inland-security-footer {
+  position: fixed;
+  z-index: 10;
+  bottom: 0;
+  right: 0;
+  width: fit-content;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.tooltip-container {
+  position: relative;
+}
+
+.trigger-content {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  background-color: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.minimax-link {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 300;
+  color: #adadad;
+  text-decoration: none;
+}
+
+.minimax-link:visited {
+  color: #adadad;
+}
+
+.minimax-link:hover {
+  color: #666666;
+}
+
+.tooltip-content {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  padding-bottom: 16px; /* 8px 内容间距 + 8px 用于鼠标移动的透明区域 */
+  font-size: 12px;
+  line-height: 17px;
+  background-color: #fafafa;
+  border-radius: 12px;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  color: #171717;
+}
+
+/* 创建透明的连接区域，让鼠标可以平滑移动到 tooltip */
+.tooltip-content::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  right: 0;
+  height: 16px;
+}
+
+.tooltip-container:hover .tooltip-content {
+  display: flex;
+}
+
+.info-section {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.beian-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #171717;
+}
+
+.beian-icon {
+  width: 14px;
+  height: 14px;
+  margin-right: 2px;
+}
+
+.underline-text {
+  color: #171717;
+  text-decoration: underline;
+}
+
+.underline-text:hover {
+  color: #000000;
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+  .trigger-content {
+    background-color: transparent;
+  }
+
+  .minimax-link,
+  .minimax-link:visited {
+    color: #666666;
+  }
+
+  .minimax-link:hover {
+    color: #adadad;
+  }
+
+  .tooltip-content {
+    background-color: #262626;
+    color: #ededed;
+  }
+
+  .beian-link,
+  .underline-text {
+    color: #ededed;
+  }
+
+  .underline-text:hover {
+    color: #ffffff;
+  }
+}
+
+</style>
+<div class="inland-security-footer">
+  <div class="tooltip-container">
+    <div class="trigger-content">
+      <a href="https://www.minimaxi.com/" target="_blank" rel="noreferrer" class="minimax-link">
+        <span>© 2026 MiniMax</span>
+      </a>
+    </div>
+    <div class="tooltip-content">
+      <section class="info-section">
+        <span>上海稀宇科技有限公司</span>
+      </section>
+
+      <section class="info-section">
+        <a class="beian-link" href="https://www.beian.gov.cn/portal/registerSystemInfo?recordcode=31010402010179" target="_blank" rel="noreferrer">
+          <img alt="hailuo-beian-icon" src="https://cdn.hailuoai.com/hailuo-video-web/public_assets/223037d3-79fd-4db0-a456-749f38a6a14b.png" class="beian-icon">
+          <span class="underline-text">沪公网安备31010402010179号</span>
+        </a>
+        <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer" class="underline-text">
+          沪ICP备2023003282号-38
+        </a>
+      </section>
+
+      <section class="info-section">
+        <span>模型名称：MiniMax</span>
+        <span>备案号：Shanghai-MiniMax-202505230046</span>
+      </section>
+
+      <section class="info-section">
+        <a href="https://agent.minimaxi.com/doc/zh/terms-of-service.html" target="_blank" rel="noreferrer" class="underline-text">
+          用户协议
+        </a>
+        <a href="https://agent.minimaxi.com/doc/zh/privacy-policy.html" target="_blank" rel="noreferrer" class="underline-text">
+          隐私政策
+        </a>
+      </section>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
