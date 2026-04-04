@@ -1,0 +1,345 @@
+/* 全局样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+    line-height: 1.6;
+    color: #333;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* 导航按钮激活状态 */
+.nav-btn.active {
+    background-color: rgba(255, 255, 255, 0.25);
+    font-weight: 600;
+}
+
+/* 标签页内容 */
+.tab-content {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 表格样式增强 */
+table th {
+    white-space: nowrap;
+}
+
+table td {
+    vertical-align: middle;
+}
+
+/* 表单输入框聚焦 */
+input:focus, select:focus, textarea:focus {
+    border-color: #10b981;
+}
+
+/* 按钮过渡 */
+button {
+    transition: all 0.2s ease;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+/* 卡片悬浮效果 */
+.card-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+/* 地图容器 */
+#map-container-wrapper {
+    border-radius: 0.75rem;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+#map-container {
+    width: 100% !important;
+    height: 100% !important;
+    background-color: #f0f0f0;
+    position: relative;
+}
+
+/* 地图标签页显示时确保容器可见 */
+#map-tab:not(.hidden) #map-container {
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* 地图加载中提示 */
+#map-container:empty::before {
+    content: '地图加载中...';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #666;
+    font-size: 14px;
+    z-index: 1;
+}
+
+/* 地图加载错误提示 */
+#map-container.map-error::before {
+    content: '地图加载失败，请刷新页面重试';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #ef4444;
+    font-size: 14px;
+    z-index: 1;
+    text-align: center;
+}
+
+/* 阶段状态标签 */
+.stage-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.stage-pending {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.stage-ongoing {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.stage-completed {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+/* 工艺类型标签 */
+.process-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.process-psa {
+    background-color: #e0e7ff;
+    color: #3730a3;
+}
+
+.process-membrane {
+    background-color: #fce7f3;
+    color: #be185d;
+}
+
+.process-cryogenic {
+    background-color: #cffafe;
+    color: #0e7490;
+}
+
+/* 地图信息窗体 */
+.amap-info-window {
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.amap-info-window h4 {
+    margin-bottom: 8px;
+    color: #059669;
+    font-weight: 600;
+}
+
+.amap-info-window p {
+    margin: 4px 0;
+    font-size: 13px;
+    color: #4b5563;
+}
+
+/* 响应式表格 */
+@media (max-width: 768px) {
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
+
+/* 加载动画 */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #10b981;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 空状态 */
+.empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: #9ca3af;
+}
+
+.empty-state i {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+/* Toast 提示 */
+.toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    z-index: 9999;
+    animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
+}
+
+.toast-success {
+    background-color: #10b981;
+}
+
+.toast-error {
+    background-color: #ef4444;
+}
+
+.toast-info {
+    background-color: #3b82f6;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+/* 雷达图容器 */
+.radar-chart {
+    width: 100%;
+    height: 200px;
+}
+
+/* 项目群圈样式 */
+.project-group-circle {
+    fill: rgba(139, 92, 246, 0.15);
+    stroke: #8b5cf6;
+    stroke-width: 2;
+    stroke-dasharray: 5, 5;
+}
+
+/* 推荐列表 */
+.recommendation-item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background-color: #f9fafb;
+    transition: background-color 0.2s;
+}
+
+.recommendation-item:hover {
+    background-color: #f3f4f6;
+}
+
+.recommendation-score {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    margin-right: 16px;
+}
+
+.score-high {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.score-medium {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.score-low {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+/* 打印样式 */
+@media print {
+    nav, footer, .no-print {
+        display: none !important;
+    }
+    
+    .tab-content {
+        display: block !important;
+    }
+}
