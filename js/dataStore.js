@@ -97,6 +97,8 @@ const dataStore = {
             if (cloudPersonnel && cloudPersonnel.length > 0) {
                 console.log(`[DataStore] 云端获取到 ${cloudPersonnel.length} 名人员，强制更新本地数据`);
                 // 转换为前端格式
+                // 注意：Supabase 表的实际列名是 skills, phone, email, years
+                // experience 是 integer 类型（存储项目数量）
                 const personnel = cloudPersonnel.map(p => ({
                     id: p.id,
                     name: p.name,
@@ -104,12 +106,11 @@ const dataStore = {
                     age: p.age,
                     department: p.department || '',
                     position: p.position || '',
-                    experience: p.experience || { projectCount: 0, years: 0, processes: [] },
-                    customSkills: p.custom_skills || [],
+                    experience: { projectCount: p.experience || 0, years: p.years || 0, processes: [] },
+                    customSkills: p.skills || [],
                     capabilities: p.capabilities || { technical: 5, management: 5, coordination: 5 },
                     maxProjects: p.max_projects || 3,
-                    contact: p.contact || {},
-                    currentProjects: p.current_projects || [],
+                    contact: { phone: p.phone || '', email: p.email || '' },
                     createdAt: p.created_at,
                     updatedAt: p.updated_at
                 }));
@@ -203,6 +204,8 @@ const dataStore = {
     async syncPersonnelToCloud(person) {
         try {
             // 使用 UPSERT，无论是新建还是更新都使用同一操作
+            // 注意：Supabase 表的实际列名是 skills, phone, email, years
+            // experience 是 integer 类型，存储项目数量
             const cloudData = {
                 id: person.id,
                 name: person.name,
@@ -210,12 +213,13 @@ const dataStore = {
                 age: person.age,
                 department: person.department || '',
                 position: person.position || '',
-                experience: person.experience || { projectCount: 0, years: 0, processes: [] },
-                custom_skills: person.customSkills || [],
+                experience: person.experience?.projectCount || 0,  // experience 是整数
+                skills: person.customSkills || [],
                 capabilities: person.capabilities || { technical: 5, management: 5, coordination: 5 },
+                years: person.experience?.years || 0,
                 max_projects: person.maxProjects || 3,
-                contact: person.contact || {},
-                current_projects: person.currentProjects || []
+                phone: person.contact?.phone || '',
+                email: person.contact?.email || ''
             };
 
             const result = await supabaseClient.upsert('personnel', cloudData);
