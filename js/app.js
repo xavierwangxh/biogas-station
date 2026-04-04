@@ -983,9 +983,9 @@ const app = {
      */
     performSave(projectData) {
         console.log('[App] 执行保存，项目ID:', projectData.id || '(新建)');
-        
+
         let result;
-        
+
         if (projectData.id) {
             result = projectManager.updateProject(projectData.id, projectData);
             console.log('[App] 调用 updateProject 结果:', result);
@@ -993,16 +993,25 @@ const app = {
             result = projectManager.createProject(projectData);
             console.log('[App] 调用 createProject 结果:', result);
         }
-        
+
         if (result.success) {
-            showToast(projectData.id ? '项目更新成功' : '项目创建成功', 'success');
+            // 根据用户权限决定是否同步到云端
+            if (auth.isAdmin()) {
+                // 管理员：自动同步到云端
+                dataStore.syncProjectToCloud(result.project);
+                showToast(projectData.id ? '项目更新成功，已同步到云端' : '项目创建成功，已同步到云端', 'success');
+            } else {
+                // 普通用户：保存本地，提示需要管理员授权才能同步到云端
+                showToast(projectData.id ? '项目更新成功（本地保存）' : '项目创建成功（本地保存）', 'success');
+            }
+
             this.closeProjectModal();
             this.renderProjects();
             this.updateDashboard();
-            
+
             // 异步尝试地理编码更新坐标
             this.tryGeocodeAsync(result.project || projectData);
-            
+
             if (mapVisualization.map) {
                 mapVisualization.showAllProjects();
             }
@@ -1268,19 +1277,19 @@ const app = {
      */
     savePersonnel() {
         console.log('[App] savePersonnel 被调用');
-        
+
         const id = document.getElementById('personnel-id')?.value || '';
-        
+
         // 收集熟悉技能
         const skills = [];
         document.querySelectorAll('input[name="skills"]:checked').forEach(cb => {
             skills.push(cb.value);
         });
-        
+
         // 收集自定义技能
         const customSkillsInput = document.getElementById('personnel-custom-skills')?.value;
         const customSkills = customSkillsInput ? customSkillsInput.split(/[,，]/).map(s => s.trim()).filter(s => s) : [];
-        
+
         const personData = {
             id: id || undefined,
             name: document.getElementById('personnel-name')?.value || '',
@@ -1305,9 +1314,9 @@ const app = {
                 email: document.getElementById('personnel-email')?.value || ''
             }
         };
-        
+
         console.log('[App] 人员数据已收集:', personData);
-        
+
         let result;
         if (id) {
             result = personnelManager.updatePersonnel(id, personData);
@@ -1316,9 +1325,18 @@ const app = {
             result = personnelManager.createPersonnel(personData);
             console.log('[App] 调用 createPersonnel 结果:', result);
         }
-        
+
         if (result.success) {
-            showToast(id ? '人员更新成功' : '人员添加成功', 'success');
+            // 根据用户权限决定是否同步到云端
+            if (auth.isAdmin()) {
+                // 管理员：自动同步到云端
+                dataStore.syncPersonnelToCloud(result.person);
+                showToast(id ? '人员更新成功，已同步到云端' : '人员添加成功，已同步到云端', 'success');
+            } else {
+                // 普通用户：保存本地，提示需要管理员授权才能同步到云端
+                showToast(id ? '人员更新成功（本地保存）' : '人员添加成功（本地保存）', 'success');
+            }
+
             this.closePersonnelModal();
             this.renderPersonnel();
             this.updateDashboard();
@@ -1454,16 +1472,27 @@ const app = {
     assignLeader(projectId, stageKey, personId) {
         const project = dataStore.getProject(projectId);
         if (!project) return;
-        
+
         if (!project.lifecycle) project.lifecycle = {};
         if (!project.lifecycle[stageKey]) project.lifecycle[stageKey] = {};
-        
+
         project.lifecycle[stageKey].leaderId = personId;
-        
-        dataStore.saveProject(project);
+
+        // 保存项目
+        const savedProject = dataStore.saveProject(project);
+
+        // 根据用户权限决定是否同步到云端
+        if (auth.isAdmin()) {
+            // 管理员：自动同步到云端
+            dataStore.syncProjectToCloud(savedProject);
+            showToast('指派成功，已同步到云端', 'success');
+        } else {
+            // 普通用户：仅保存本地
+            showToast('指派成功（本地保存）', 'success');
+        }
+
         dataStore.updatePersonnelProjects(personId, projectId, 'add');
-        
-        showToast('指派成功', 'success');
+
         this.closeRecommendationModal();
         this.renderProjects();
     },
