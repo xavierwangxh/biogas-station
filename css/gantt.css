@@ -1,0 +1,274 @@
+/* 甘特图样式 */
+
+.gantt-wrapper {
+    display: flex;
+    min-height: 300px;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.gantt-task-list {
+    width: 200px;
+    flex-shrink: 0;
+    border-right: 1px solid #e5e7eb;
+    background: #f9fafb;
+}
+
+.gantt-task-header {
+    height: 40px;
+    line-height: 40px;
+    padding: 0 16px;
+    font-weight: 600;
+    background: #f3f4f6;
+    border-bottom: 1px solid #e5e7eb;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.gantt-task-item {
+    height: 40px;
+    line-height: 40px;
+    padding: 0 16px;
+    border-bottom: 1px solid #f3f4f6;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px;
+    color: #374151;
+}
+
+.gantt-task-item:hover {
+    background: #f3f4f6;
+}
+
+.gantt-timeline {
+    flex: 1;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.gantt-timeline-header {
+    display: flex;
+    height: 40px;
+    background: #f3f4f6;
+    border-bottom: 1px solid #e5e7eb;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.gantt-month-header {
+    padding: 0 12px;
+    font-weight: 600;
+    font-size: 13px;
+    color: #374151;
+    border-right: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.gantt-body {
+    position: relative;
+    min-height: 200px;
+}
+
+.gantt-row {
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.gantt-row:hover {
+    background: #f9fafb;
+}
+
+.gantt-bar {
+    position: absolute;
+    top: 6px;
+    height: 28px;
+    border-radius: 4px;
+    font-size: 11px;
+    line-height: 28px;
+    color: white;
+    text-align: center;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+}
+
+.gantt-bar:hover {
+    transform: scaleY(1.1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    z-index: 5;
+}
+
+.gantt-bar-tracking {
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.gantt-bar-contract {
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+}
+
+.gantt-bar-procedure {
+    background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+}
+
+.gantt-bar-construction {
+    background: linear-gradient(90deg, #ec4899, #f472b6);
+}
+
+.gantt-bar-operation {
+    background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.gantt-today {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #ef4444;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.gantt-today-label {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    background: #ef4444;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.gantt-legend {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 16px;
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 8px;
+}
+
+.gantt-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #4b5563;
+}
+
+.gantt-legend-color {
+    width: 24px;
+    height: 12px;
+    border-radius: 3px;
+}
+
+/* 人员卡片样式增强 */
+.personnel-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid #e5e7eb;
+}
+
+.personnel-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.personnel-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.personnel-role {
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.personnel-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.personnel-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.personnel-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #f3f4f6;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 2px;
+}
+
+/* 表格样式增强 */
+.table-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.table-action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.table-action-btn:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.table-action-btn.delete:hover {
+    background: #fee2e2;
+    color: #ef4444;
+}
