@@ -275,7 +275,7 @@ const dataStore = {
         return projects.find(p => p.id === id) || null;
     },
 
-    saveProject(project) {
+    saveProject(project, options = {}) {
         console.log('[DataStore] 保存项目:', project.name || '未命名');
 
         if (!project) {
@@ -308,8 +308,9 @@ const dataStore = {
 
         this.saveToStorage(this.KEYS.PROJECTS, projects);
 
-        // 异步同步到云端
-        this.syncToCloud();
+        // 只有明确要求同步时才同步到云端（不在这里自动同步）
+        // 如果 options.skipCloud 为 true，则跳过云端同步
+        // 调用者（如 app.js）会根据用户权限决定是否同步
 
         return project;
     },
@@ -382,7 +383,7 @@ const dataStore = {
         return personnel.find(p => p.id === id) || null;
     },
 
-    savePersonnel(person) {
+    savePersonnel(person, options = {}) {
         console.log('[DataStore] 保存人员:', person.name || '未命名');
 
         if (!person) {
@@ -416,8 +417,8 @@ const dataStore = {
 
         this.saveToStorage(this.KEYS.PERSONNEL, personnel);
 
-        // 异步同步到云端
-        this.syncToCloud();
+        // 只有明确要求同步时才同步到云端（不在这里自动同步）
+        // 调用者（如 app.js）会根据用户权限决定是否同步
 
         return person;
     },
@@ -649,6 +650,91 @@ const dataStore = {
         await this.syncFromCloud();
         await this.syncToCloud();
         showToast('同步完成', 'success');
+    },
+
+    /**
+     * 同步所有数据到云端（带权限检查）
+     * @param {boolean} requireAdmin - 是否需要管理员验证
+     * @returns {Promise<{success: boolean, error?: string}>}
+     */
+    async syncAllToCloud(requireAdmin = true) {
+        // 检查权限
+        if (requireAdmin && typeof auth !== 'undefined' && !auth.isAdmin()) {
+            return { success: false, error: '需要管理员权限才能同步到云端' };
+        }
+
+        try {
+            showToast('正在同步数据到云端...', 'info');
+
+            // 同步所有项目
+            const projects = this.getAllProjects();
+            for (const project of projects) {
+                await this.syncProjectToCloud(project);
+            }
+
+            // 同步所有人员
+            const personnel = this.getAllPersonnel();
+            for (const person of personnel) {
+                await this.syncPersonnelToCloud(person);
+            }
+
+            this.cloudSync.lastSync = new Date().toISOString();
+            localStorage.setItem(this.KEYS.LAST_SYNC, this.cloudSync.lastSync);
+
+            console.log('[DataStore] 所有数据已同步到云端');
+            return { success: true };
+        } catch (error) {
+            console.error('[DataStore] 同步到云端失败:', error);
+            return { success: false, error: error.message };
+        }
+    },
+
+    /**
+     * 保存并同步项目（带权限检查）
+     * @param {Object} project - 项目数据
+     * @param {boolean} syncToCloud - 是否同步到云端
+     * @returns {Object} 保存结果
+     */
+    saveProjectWithPermission(project, syncToCloud = true) {
+        const result = this.saveProject(project);
+
+        if (syncToCloud) {
+            // 检查是否是管理员
+            if (typeof auth !== 'undefined' && auth.isAdmin()) {
+                // 管理员直接同步
+                this.syncProjectToCloud(result);
+                console.log('[DataStore] 管理员保存，已同步到云端');
+            } else {
+                // 非管理员需要验证
+                console.log('[DataStore] 非管理员保存，仅保存在本地');
+            }
+        }
+
+        return result;
+    },
+
+    /**
+     * 保存并同步人员（带权限检查）
+     * @param {Object} person - 人员数据
+     * @param {boolean} syncToCloud - 是否同步到云端
+     * @returns {Object} 保存结果
+     */
+    savePersonnelWithPermission(person, syncToCloud = true) {
+        const result = this.savePersonnel(person);
+
+        if (syncToCloud) {
+            // 检查是否是管理员
+            if (typeof auth !== 'undefined' && auth.isAdmin()) {
+                // 管理员直接同步
+                this.syncPersonnelToCloud(result);
+                console.log('[DataStore] 管理员保存，已同步到云端');
+            } else {
+                // 非管理员需要验证
+                console.log('[DataStore] 非管理员保存，仅保存在本地');
+            }
+        }
+
+        return result;
     }
 };
 
