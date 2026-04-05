@@ -493,6 +493,11 @@ const mapVisualization = {
     showProjectGroups() {
         console.log('[Map] ==================== 显示项目群 ====================');
         
+        // 获取用户输入的半径值
+        const radiusInput = document.getElementById('group-radius');
+        const radius = radiusInput ? parseInt(radiusInput.value) || 150 : 150;
+        console.log('[Map] 使用归类半径:', radius, 'km');
+        
         // 确保地图已初始化
         if (!this.map) {
             console.log('[Map] 地图未初始化，先初始化');
@@ -532,15 +537,18 @@ const mapVisualization = {
         console.log('[Map] 等待', delayTime, 'ms 后执行项目群归并...');
         
         setTimeout(() => {
-            this._doShowProjectGroups();
+            this._doShowProjectGroups(radius);
         }, delayTime);
     },
     
     /**
      * 实际执行项目群显示（内部方法）
+     * @param {number} radius - 归类半径（公里）
      */
-    _doShowProjectGroups() {
-        const groups = smartRecommendation.groupProjectsByDistance(150);
+    _doShowProjectGroups(radius = 150) {
+        console.log('[Map] 执行项目群归并，半径:', radius, 'km');
+        
+        const groups = smartRecommendation.groupProjectsByDistance(radius);
         
         this.clearMarkers();
         this.clearCircles();
@@ -565,7 +573,7 @@ const mapVisualization = {
                 try {
                     const circle = new AMap.Circle({
                         center: [group.centerPoint.longitude, group.centerPoint.latitude],
-                        radius: 150000, // 150公里
+                        radius: radius * 1000, // 转换为米
                         strokeColor: '#8b5cf6',
                         strokeWeight: 2,
                         strokeOpacity: 0.8,

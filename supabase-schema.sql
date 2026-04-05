@@ -1,9 +1,13 @@
 -- Supabase 数据库表结构
 -- 请在 Supabase Dashboard -> SQL Editor 中执行此脚本
 
--- 1. 创建项目表
-CREATE TABLE IF NOT EXISTS projects (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- 1. 删除旧表（如果存在）
+DROP TABLE IF EXISTS projects CASCADE;
+DROP TABLE IF EXISTS personnel CASCADE;
+
+-- 2. 创建项目表（使用 TEXT 类型的 ID 以支持前端生成的字符串 ID）
+CREATE TABLE projects (
+    id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     location JSONB DEFAULT '{}',
     scale JSONB DEFAULT '{}',
@@ -14,14 +18,18 @@ CREATE TABLE IF NOT EXISTS projects (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 2. 创建人员表
-CREATE TABLE IF NOT EXISTS personnel (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- 3. 创建人员表（使用 TEXT 类型的 ID 以支持前端生成的字符串 ID）
+CREATE TABLE personnel (
+    id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     gender TEXT DEFAULT '男',
     age INTEGER,
     department TEXT DEFAULT '',
     position TEXT DEFAULT '',
+    education TEXT DEFAULT '',
+    major TEXT DEFAULT '',
+    title TEXT DEFAULT '',
+    certificates TEXT DEFAULT '',
     experience JSONB DEFAULT '{}',
     custom_skills JSONB DEFAULT '[]',
     capabilities JSONB DEFAULT '{}',

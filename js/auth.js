@@ -323,7 +323,7 @@ const auth = {
     /**
      * 执行登录
      */
-    doLogin() {
+    async doLogin() {
         const username = document.getElementById('login-username').value.trim();
         const password = document.getElementById('login-password').value;
 
@@ -337,11 +337,21 @@ const auth = {
         if (result.success) {
             this.hideLoginModal();
             this.showLoginSuccess(result.message);
+            
+            // 登录成功后从云端同步数据
+            showToast('正在从云端同步数据...', 'info');
+            try {
+                await dataStore.syncFromCloud();
+                showToast('数据同步完成', 'success');
+            } catch (error) {
+                console.error('[Auth] 同步数据失败:', error);
+                showToast('云端同步失败，使用本地数据', 'warning');
+            }
 
             // 刷新页面以显示用户信息
             setTimeout(() => {
                 window.location.reload();
-            }, 500);
+            }, 1000);
         } else {
             this.showLoginError(result.message);
         }

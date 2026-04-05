@@ -15,14 +15,16 @@ const PROJECT_STAGES = [
 
 // 处理工艺 - 扩展为脱硫工艺和脱碳工艺
 const PROCESS_TYPES = {
-    // 脱硫工艺
+    // 脱硫工艺 (4项)
     'dry_desulfurization': '干法脱硫',
     'wet_desulfurization': '湿法脱硫',
-    'biological_desulfurization': '生物脱硫',
-    // 脱碳工艺
-    'psa': 'PSA变压吸附',
+    'alkaline_biological_desulfurization': '碱式生物脱硫',
+    'acid_biological_desulfurization': '酸式生物脱硫',
+    // 脱碳工艺 (4项)
+    'psa': 'PSA',
     'membrane': '膜分离',
-    'chemical_absorption': '化学吸收',
+    'mdea': 'MDEA',
+    'high_pressure_water_wash': '高压水洗',
     // 其他
     'other': '其他'
 };
@@ -31,11 +33,11 @@ const PROCESS_TYPES = {
 const PROCESS_CATEGORIES = {
     desulfurization: {
         name: '脱硫工艺',
-        options: ['dry_desulfurization', 'wet_desulfurization', 'biological_desulfurization']
+        options: ['dry_desulfurization', 'wet_desulfurization', 'alkaline_biological_desulfurization', 'acid_biological_desulfurization']
     },
     decarbonization: {
         name: '脱碳工艺',
-        options: ['psa', 'membrane', 'chemical_absorption']
+        options: ['psa', 'membrane', 'mdea', 'high_pressure_water_wash']
     }
 };
 
@@ -49,14 +51,14 @@ const STAGE_NAMES = {
 
 // 部门列表
 const DEPARTMENTS = [
+    '总经办',
+    '投资部',
     '工程部',
     '技术部',
     '运营部',
-    '市场部',
     '财务部',
-    '行政部',
     '采购部',
-    '质量部'
+    '综合部'
 ];
 
 // 省市区三级联动数据

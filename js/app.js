@@ -317,11 +317,11 @@ const app = {
         if (projectForm) {
             console.log('[App] 找到项目表单，绑定submit事件');
             
-            projectForm.addEventListener('submit', (e) => {
+            projectForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 console.log('[App] 项目表单submit事件触发');
-                this.saveProject();
+                await this.saveProject();
             });
         } else {
             console.error('[App] 未找到项目表单 #project-form');
@@ -332,11 +332,11 @@ const app = {
         if (personnelForm) {
             console.log('[App] 找到人员表单，绑定submit事件');
             
-            personnelForm.addEventListener('submit', (e) => {
+            personnelForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 console.log('[App] 人员表单submit事件触发');
-                this.savePersonnel();
+                await this.savePersonnel();
             });
         } else {
             console.error('[App] 未找到人员表单 #personnel-form');
@@ -352,6 +352,8 @@ const app = {
                 });
             }
         });
+        
+        console.log('[App] 表单事件初始化完成');
     },
 
     /**
@@ -477,14 +479,26 @@ const app = {
             <div class="flex justify-between items-center mb-6">
                 <div>
                     <h2 class="text-2xl font-bold text-gray-800">人员负荷评估</h2>
-                    <p class="text-gray-500 mt-1">评估人员在指定时间段内的项目配置合理性</p>
+                    <p class="text-gray-500 mt-1">评估人员在指定日期的项目配置合理性</p>
                 </div>
                 <div class="flex items-center gap-4">
                     <div class="flex items-center gap-2">
-                        <label class="text-sm text-gray-600">评估时间段:</label>
-                        <input type="date" id="assess-start-date" class="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                        <span class="text-gray-400">至</span>
-                        <input type="date" id="assess-end-date" class="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <label class="text-sm text-gray-600">被评估部门:</label>
+                        <select id="assess-department" class="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500" onchange="assessmentModule.onDepartmentChange()">
+                            <option value="all">全部部门</option>
+                            <option value="总经办">总经办</option>
+                            <option value="投资部">投资部</option>
+                            <option value="工程部">工程部</option>
+                            <option value="技术部">技术部</option>
+                            <option value="运营部">运营部</option>
+                            <option value="财务部">财务部</option>
+                            <option value="采购部">采购部</option>
+                            <option value="综合部">综合部</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label class="text-sm text-gray-600">评估日:</label>
+                        <input type="date" id="assess-date" class="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
                         <button onclick="if(typeof assessmentModule !== 'undefined' && assessmentModule.runAssessment) { assessmentModule.runAssessment(); } else { console.error('assessmentModule未加载'); }" class="ml-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition">
                             <i class="fas fa-play mr-2"></i>评估
                         </button>
@@ -499,11 +513,11 @@ const app = {
                     <p class="text-2xl font-bold text-gray-800 mt-1" id="total-personnel">0</p>
                 </div>
                 <div class="bg-white rounded-xl shadow-md p-5 border-l-4 border-red-500">
-                    <p class="text-gray-500 text-sm">过载警告</p>
+                    <p class="text-gray-500 text-sm">项目过载(>5个)</p>
                     <p class="text-2xl font-bold text-red-600 mt-1" id="overload-count">0</p>
                 </div>
                 <div class="bg-white rounded-xl shadow-md p-5 border-l-4 border-yellow-500">
-                    <p class="text-gray-500 text-sm">距离过远提醒</p>
+                    <p class="text-gray-500 text-sm">距离过远(>300km)</p>
                     <p class="text-2xl font-bold text-yellow-600 mt-1" id="distance-alert-count">0</p>
                 </div>
                 <div class="bg-white rounded-xl shadow-md p-5 border-l-4 border-blue-500">
@@ -514,20 +528,24 @@ const app = {
 
             <!-- 评估结果表格 -->
             <div class="bg-white rounded-xl shadow-md overflow-hidden">
-                <div class="px-6 py-4 border-b flex justify-between items-center">
+                <div class="px-6 py-4 border-b flex justify-between items-center flex-wrap gap-2">
                     <h3 class="text-lg font-semibold">详细评估结果</h3>
-                    <div class="flex items-center gap-4 text-sm">
-                        <div class="flex items-center gap-1">
-                            <span class="w-3 h-3 rounded-full bg-red-500"></span>
-                            <span class="text-gray-600">&gt;5个项目（过载）</span>
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-2">
+                            <label class="text-sm text-gray-600">排序:</label>
+                            <select id="assess-sort" class="px-2 py-1 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" onchange="assessmentModule.onSortChange()">
+                                <option value="health-desc">健康度评分(高→低)</option>
+                                <option value="health-asc">健康度评分(低→高)</option>
+                                <option value="workload-desc">工作饱和度(高→低)</option>
+                                <option value="workload-asc">工作饱和度(低→高)</option>
+                                <option value="skill-desc">技能匹配度(高→低)</option>
+                                <option value="skill-asc">技能匹配度(低→高)</option>
+                                <option value="distance-desc">最远距离(远→近)</option>
+                                <option value="distance-asc">最远距离(近→远)</option>
+                            </select>
                         </div>
-                        <div class="flex items-center gap-1">
-                            <span class="w-3 h-3 rounded-full bg-yellow-500"></span>
-                            <span class="text-gray-600">&gt;300km（距离远）</span>
-                        </div>
-                        <div class="flex items-center gap-1">
-                            <span class="w-3 h-3 rounded-full bg-blue-500"></span>
-                            <span class="text-gray-600">技能匹配度</span>
+                        <div class="text-sm text-gray-500 italic">
+                            <i class="fas fa-info-circle mr-1"></i>未负责两个及以上项目的最远距离默认为150km
                         </div>
                     </div>
                 </div>
@@ -555,7 +573,7 @@ const app = {
             <!-- 可视化图表 -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
                 <div class="bg-white rounded-xl shadow-md p-6">
-                    <h3 class="text-lg font-semibold mb-4">人员项目负荷分布</h3>
+                    <h3 class="text-lg font-semibold mb-4">人员项目数量分布</h3>
                     <div id="project-load-chart" style="height: 300px;"></div>
                 </div>
                 
@@ -928,7 +946,7 @@ const app = {
     /**
      * 保存项目
      */
-    saveProject() {
+    async saveProject() {
         console.log('[App] saveProject 被调用');
         
         const id = document.getElementById('project-id')?.value || '';
@@ -1011,10 +1029,10 @@ const app = {
         // 如果没有坐标但有区县信息，先尝试通过区县获取坐标
         if ((!longitude || !latitude) && (province || city || district)) {
             console.log('[App] 项目无坐标，尝试通过区县获取...');
-            this.performSaveWithGeocode(projectData);
+            await this.performSaveWithGeocode(projectData);
         } else {
             // 执行保存
-            this.performSave(projectData);
+            await this.performSave(projectData);
         }
     },
 
@@ -1060,13 +1078,13 @@ const app = {
         }
         
         // 继续保存
-        this.performSave(projectData);
+        await this.performSave(projectData);
     },
 
     /**
      * 执行保存
      */
-    performSave(projectData) {
+    async performSave(projectData) {
         console.log('[App] 执行保存，项目ID:', projectData.id || '(新建)');
 
         let result;
@@ -1083,8 +1101,18 @@ const app = {
             // 根据用户权限决定是否同步到云端
             if (auth.isAdmin()) {
                 // 管理员：自动同步到云端
-                dataStore.syncProjectToCloud(result.project);
-                showToast(projectData.id ? '项目更新成功，已同步到云端' : '项目创建成功，已同步到云端', 'success');
+                showToast('正在同步到云端...', 'info');
+                try {
+                    const syncResult = await dataStore.syncProjectToCloud(result.project);
+                    if (syncResult.success) {
+                        showToast(projectData.id ? '项目更新成功，已同步到云端' : '项目创建成功，已同步到云端', 'success');
+                    } else {
+                        showToast('项目保存成功，但云端同步失败: ' + syncResult.error, 'warning');
+                    }
+                } catch (error) {
+                    console.error('[App] 同步到云端失败:', error);
+                    showToast('项目保存成功，但云端同步失败', 'warning');
+                }
             } else {
                 // 普通用户：保存本地，提示需要管理员授权才能同步到云端
                 showToast(projectData.id ? '项目更新成功（本地保存）' : '项目创建成功（本地保存）', 'success');
@@ -1326,7 +1354,7 @@ const app = {
             
             // 设置能力评分
             if (person.capabilities) {
-                const capFields = ['technical', 'management', 'coordination', 'communication', 'problem', 'learning', 'safety', 'teamwork'];
+                const capFields = ['technical', 'management', 'coordination'];
                 capFields.forEach(field => {
                     const slider = document.getElementById(`capability-${field}`);
                     const valueEl = document.getElementById(`capability-${field}-value`);
@@ -1351,7 +1379,7 @@ const app = {
         } else {
             title.textContent = '添加人员';
             // 重置能力评估滑块
-            const capabilityFields = ['technical', 'management', 'coordination', 'communication', 'problem', 'learning', 'safety', 'teamwork'];
+            const capabilityFields = ['technical', 'management', 'coordination'];
             capabilityFields.forEach(field => {
                 const slider = document.getElementById(`capability-${field}`);
                 const value = document.getElementById(`capability-${field}-value`);
@@ -1376,7 +1404,7 @@ const app = {
     /**
      * 保存人员
      */
-    savePersonnel() {
+    async savePersonnel() {
         console.log('[App] savePersonnel 被调用');
 
         const id = document.getElementById('personnel-id')?.value || '';
@@ -1411,12 +1439,7 @@ const app = {
             capabilities: {
                 technical: parseInt(document.getElementById('capability-technical')?.value) || 5,
                 management: parseInt(document.getElementById('capability-management')?.value) || 5,
-                coordination: parseInt(document.getElementById('capability-coordination')?.value) || 5,
-                communication: parseInt(document.getElementById('capability-communication')?.value) || 5,
-                problem: parseInt(document.getElementById('capability-problem')?.value) || 5,
-                learning: parseInt(document.getElementById('capability-learning')?.value) || 5,
-                safety: parseInt(document.getElementById('capability-safety')?.value) || 5,
-                teamwork: parseInt(document.getElementById('capability-teamwork')?.value) || 5
+                coordination: parseInt(document.getElementById('capability-coordination')?.value) || 5
             },
             maxProjects: parseInt(document.getElementById('personnel-max-projects')?.value) || 3,
             contact: {
@@ -1440,8 +1463,18 @@ const app = {
             // 根据用户权限决定是否同步到云端
             if (auth.isAdmin()) {
                 // 管理员：自动同步到云端
-                dataStore.syncPersonnelToCloud(result.person);
-                showToast(id ? '人员更新成功，已同步到云端' : '人员添加成功，已同步到云端', 'success');
+                showToast('正在同步到云端...', 'info');
+                try {
+                    const syncResult = await dataStore.syncPersonnelToCloud(result.person);
+                    if (syncResult.success) {
+                        showToast(id ? '人员更新成功，已同步到云端' : '人员添加成功，已同步到云端', 'success');
+                    } else {
+                        showToast('人员保存成功，但云端同步失败: ' + syncResult.error, 'warning');
+                    }
+                } catch (error) {
+                    console.error('[App] 同步到云端失败:', error);
+                    showToast('人员保存成功，但云端同步失败', 'warning');
+                }
             } else {
                 // 普通用户：保存本地，提示需要管理员授权才能同步到云端
                 showToast(id ? '人员更新成功（本地保存）' : '人员添加成功（本地保存）', 'success');

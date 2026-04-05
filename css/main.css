@@ -180,6 +180,26 @@ button:active {
     color: #0e7490;
 }
 
+.process-mdea {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.process-high_pressure_water_wash {
+    background-color: #e0f2fe;
+    color: #0369a1;
+}
+
+.process-alkaline_biological_desulfurization {
+    background-color: #dcfce7;
+    color: #15803d;
+}
+
+.process-acid_biological_desulfurization {
+    background-color: #ecfccb;
+    color: #3f6212;
+}
+
 /* 地图信息窗体 */
 .amap-info-window {
     padding: 12px;

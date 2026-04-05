@@ -523,12 +523,17 @@
             </div>
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-2xl font-bold text-gray-800">地图视图</h2>
-                <div class="flex gap-2">
+                <div class="flex gap-2 items-center">
+                    <div class="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border border-gray-200">
+                        <label class="text-sm text-gray-600">归类半径:</label>
+                        <input type="number" id="group-radius" value="150" min="10" max="1000" class="w-16 px-2 py-1 border rounded text-sm text-center">
+                        <span class="text-sm text-gray-500">km</span>
+                    </div>
                     <button onclick="mapVisualization.showAllProjects()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition">
                         <i class="fas fa-map-marker-alt mr-2"></i>显示所有项目
                     </button>
                     <button onclick="mapVisualization.showProjectGroups()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
-                        <i class="fas fa-object-group mr-2"></i>显示项目群(150km)
+                        <i class="fas fa-object-group mr-2"></i>显示项目群
                     </button>
                 </div>
             </div>
@@ -582,6 +587,10 @@
                         </button>
                         <button onclick="ganttChart.resetZoom()" class="ml-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition text-sm" title="重置">
                             <i class="fas fa-compress-arrows-alt"></i>
+                        </button>
+                        <button onclick="ganttChart.scrollToToday()" class="ml-4 px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition text-sm flex items-center gap-2" title="定位到今天">
+                            <i class="fas fa-crosshairs"></i>
+                            <span>定位到今天</span>
                         </button>
                     </div>
                 </div>
@@ -701,8 +710,12 @@
                                     <span>湿法脱硫</span>
                                 </label>
                                 <label class="flex items-center">
-                                    <input type="checkbox" name="processes" value="biological_desulfurization" class="rounded text-orange-600 mr-2">
-                                    <span>生物脱硫</span>
+                                    <input type="checkbox" name="processes" value="alkaline_biological_desulfurization" class="rounded text-orange-600 mr-2">
+                                    <span>碱式生物脱硫</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="processes" value="acid_biological_desulfurization" class="rounded text-orange-600 mr-2">
+                                    <span>酸式生物脱硫</span>
                                 </label>
                             </div>
                         </div>
@@ -712,15 +725,19 @@
                             <div class="space-y-2">
                                 <label class="flex items-center">
                                     <input type="checkbox" name="processes" value="psa" class="rounded text-blue-600 mr-2">
-                                    <span>PSA变压吸附</span>
+                                    <span>PSA</span>
                                 </label>
                                 <label class="flex items-center">
                                     <input type="checkbox" name="processes" value="membrane" class="rounded text-blue-600 mr-2">
                                     <span>膜分离</span>
                                 </label>
                                 <label class="flex items-center">
-                                    <input type="checkbox" name="processes" value="chemical_absorption" class="rounded text-blue-600 mr-2">
-                                    <span>化学吸收</span>
+                                    <input type="checkbox" name="processes" value="mdea" class="rounded text-blue-600 mr-2">
+                                    <span>MDEA</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="processes" value="high_pressure_water_wash" class="rounded text-blue-600 mr-2">
+                                    <span>高压水洗</span>
                                 </label>
                             </div>
                         </div>
@@ -881,14 +898,14 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">部门</label>
                         <select id="personnel-department" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="">请选择部门</option>
+                            <option value="总经办">总经办</option>
+                            <option value="投资部">投资部</option>
                             <option value="工程部">工程部</option>
                             <option value="技术部">技术部</option>
                             <option value="运营部">运营部</option>
-                            <option value="市场部">市场部</option>
                             <option value="财务部">财务部</option>
-                            <option value="行政部">行政部</option>
                             <option value="采购部">采购部</option>
-                            <option value="质量部">质量部</option>
+                            <option value="综合部">综合部</option>
                         </select>
                     </div>
                     <div>
@@ -959,8 +976,12 @@
                                     <span class="text-sm">湿法脱硫</span>
                                 </label>
                                 <label class="flex items-center">
-                                    <input type="checkbox" name="skills" value="biological_desulfurization" class="rounded text-orange-600 mr-2">
-                                    <span class="text-sm">生物脱硫</span>
+                                    <input type="checkbox" name="skills" value="alkaline_biological_desulfurization" class="rounded text-orange-600 mr-2">
+                                    <span class="text-sm">碱式生物脱硫</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="skills" value="acid_biological_desulfurization" class="rounded text-orange-600 mr-2">
+                                    <span class="text-sm">酸式生物脱硫</span>
                                 </label>
                             </div>
                         </div>
@@ -970,15 +991,19 @@
                             <div class="space-y-2">
                                 <label class="flex items-center">
                                     <input type="checkbox" name="skills" value="psa" class="rounded text-blue-600 mr-2">
-                                    <span class="text-sm">PSA变压吸附</span>
+                                    <span class="text-sm">PSA</span>
                                 </label>
                                 <label class="flex items-center">
                                     <input type="checkbox" name="skills" value="membrane" class="rounded text-blue-600 mr-2">
                                     <span class="text-sm">膜分离</span>
                                 </label>
                                 <label class="flex items-center">
-                                    <input type="checkbox" name="skills" value="chemical_absorption" class="rounded text-blue-600 mr-2">
-                                    <span class="text-sm">化学吸收</span>
+                                    <input type="checkbox" name="skills" value="mdea" class="rounded text-blue-600 mr-2">
+                                    <span class="text-sm">MDEA</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="skills" value="high_pressure_water_wash" class="rounded text-blue-600 mr-2">
+                                    <span class="text-sm">高压水洗</span>
                                 </label>
                             </div>
                         </div>
@@ -993,7 +1018,7 @@
 
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">能力评估 (1-10分)</label>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-emerald-50 p-4 rounded-lg">
+                    <div class="grid grid-cols-1 gap-4 bg-emerald-50 p-4 rounded-lg">
                         <div class="flex items-center gap-2">
                             <label class="text-sm text-gray-700 w-24">技术能力</label>
                             <input type="range" id="capability-technical" min="1" max="10" value="5" class="flex-1" oninput="document.getElementById('capability-technical-value').textContent = this.value">
@@ -1008,31 +1033,6 @@
                             <label class="text-sm text-gray-700 w-24">协调能力</label>
                             <input type="range" id="capability-coordination" min="1" max="10" value="5" class="flex-1" oninput="document.getElementById('capability-coordination-value').textContent = this.value">
                             <span id="capability-coordination-value" class="text-sm font-medium w-8">5</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <label class="text-sm text-gray-700 w-24">沟通能力</label>
-                            <input type="range" id="capability-communication" min="1" max="10" value="5" class="flex-1" oninput="document.getElementById('capability-communication-value').textContent = this.value">
-                            <span id="capability-communication-value" class="text-sm font-medium w-8">5</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <label class="text-sm text-gray-700 w-24">问题解决</label>
-                            <input type="range" id="capability-problem" min="1" max="10" value="5" class="flex-1" oninput="document.getElementById('capability-problem-value').textContent = this.value">
-                            <span id="capability-problem-value" class="text-sm font-medium w-8">5</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <label class="text-sm text-gray-700 w-24">学习能力</label>
-                            <input type="range" id="capability-learning" min="1" max="10" value="5" class="flex-1" oninput="document.getElementById('capability-learning-value').textContent = this.value">
-                            <span id="capability-learning-value" class="text-sm font-medium w-8">5</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <label class="text-sm text-gray-700 w-24">安全管理</label>
-                            <input type="range" id="capability-safety" min="1" max="10" value="5" class="flex-1" oninput="document.getElementById('capability-safety-value').textContent = this.value">
-                            <span id="capability-safety-value" class="text-sm font-medium w-8">5</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <label class="text-sm text-gray-700 w-24">团队协作</label>
-                            <input type="range" id="capability-teamwork" min="1" max="10" value="5" class="flex-1" oninput="document.getElementById('capability-teamwork-value').textContent = this.value">
-                            <span id="capability-teamwork-value" class="text-sm font-medium w-8">5</span>
                         </div>
                     </div>
                 </div>

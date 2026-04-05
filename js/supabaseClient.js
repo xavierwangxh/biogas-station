@@ -126,13 +126,14 @@ const supabaseClient = {
      */
     async upsert(table, data) {
         try {
+            console.log(`[Supabase] UPSERT ${table}:`, data);
             const response = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
                 method: 'POST',
                 headers: {
                     'apikey': SUPABASE_ANON_KEY,
                     'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
                     'Content-Type': 'application/json',
-                    'Prefer': 'resolution=merge-duplicates'
+                    'Prefer': 'resolution=merge-duplicates,return=representation'
                 },
                 body: JSON.stringify(data)
             });

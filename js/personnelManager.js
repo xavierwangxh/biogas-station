@@ -348,17 +348,13 @@ const personnelManager = {
             indicator: [
                 { name: '技术能力', max: 10 },
                 { name: '管理能力', max: 10 },
-                { name: '协调能力', max: 10 },
-                { name: '经验水平', max: 10 },
-                { name: '工艺熟悉度', max: 10 }
+                { name: '协调能力', max: 10 }
             ],
             data: [{
                 value: [
                     capabilities.technical || 5,
                     capabilities.management || 5,
-                    capabilities.coordination || 5,
-                    Math.min((person.experience?.projectCount || 0) / 2, 10),
-                    Math.min((person.experience?.processes?.length || 0) * 3, 10)
+                    capabilities.coordination || 5
                 ],
                 name: person.name
             }]

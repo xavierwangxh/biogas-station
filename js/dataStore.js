@@ -96,9 +96,7 @@ const dataStore = {
 
             if (cloudPersonnel && cloudPersonnel.length > 0) {
                 console.log(`[DataStore] 云端获取到 ${cloudPersonnel.length} 名人员，强制更新本地数据`);
-                // 转换为前端格式
-                // 注意：Supabase 表的实际列名是 skills, phone, email, years
-                // experience 是 integer 类型（存储项目数量）
+                // 转换为前端格式（与云端表结构匹配）
                 const personnel = cloudPersonnel.map(p => ({
                     id: p.id,
                     name: p.name,
@@ -106,19 +104,25 @@ const dataStore = {
                     age: p.age,
                     department: p.department || '',
                     position: p.position || '',
-                    education: p.education || '',
-                    major: p.major || '',
-                    title: p.title || '',
-                    certificates: p.certificates || '',
-                    experience: { projectCount: p.experience || 0, years: p.years || 0, processes: [] },
-                    customSkills: p.skills || [],
+                    education: '',  // 云端表没有这些字段
+                    major: '',
+                    title: '',
+                    certificates: '',
+                    experience: { 
+                        projectCount: p.experience || 0,  // experience 是整数
+                        years: p.years || 0, 
+                        processes: p.skills || []  // 技能存储在 skills 字段
+                    },
+                    customSkills: [],  // 云端表没有这个字段
                     capabilities: p.capabilities || {
-                        technical: 5, management: 5, coordination: 5,
-                        communication: 5, problem: 5, learning: 5,
-                        safety: 5, teamwork: 5
+                        technical: 5, management: 5, coordination: 5
                     },
                     maxProjects: p.max_projects || 3,
-                    contact: { phone: p.phone || '', email: p.email || '' },
+                    contact: { 
+                        phone: p.phone || '', 
+                        email: p.email || '' 
+                    },
+                    currentProjects: [],  // 云端表没有这个字段
                     createdAt: p.created_at,
                     updatedAt: p.updated_at
                 }));
@@ -182,6 +186,8 @@ const dataStore = {
      */
     async syncProjectToCloud(project) {
         try {
+            console.log(`[DataStore] 开始同步项目到云端: ${project.name}`, project);
+            
             // 使用 UPSERT，无论是新建还是更新都使用同一操作
             const cloudData = {
                 id: project.id,
@@ -190,9 +196,13 @@ const dataStore = {
                 scale: project.scale || {},
                 costs: project.costs || {},
                 lifecycle: project.lifecycle || {},
-                notes: project.notes || ''
+                notes: project.notes || '',
+                created_at: project.createdAt || new Date().toISOString(),
+                updated_at: new Date().toISOString()
             };
 
+            console.log(`[DataStore] 项目云端数据:`, cloudData);
+            
             const result = await supabaseClient.upsert('projects', cloudData);
             if (result.success) {
                 console.log(`[DataStore] 项目同步成功: ${project.name}`);
@@ -211,9 +221,10 @@ const dataStore = {
      */
     async syncPersonnelToCloud(person) {
         try {
+            console.log(`[DataStore] 开始同步人员到云端: ${person.name}`, person);
+            
             // 使用 UPSERT，无论是新建还是更新都使用同一操作
-            // 注意：Supabase 表的实际列名是 skills, phone, email, years
-            // experience 是 integer 类型，存储项目数量
+            // 注意：Supabase 表结构中的字段名（与实际表结构匹配）
             const cloudData = {
                 id: person.id,
                 name: person.name,
@@ -221,23 +232,22 @@ const dataStore = {
                 age: person.age,
                 department: person.department || '',
                 position: person.position || '',
-                education: person.education || '',
-                major: person.major || '',
-                title: person.title || '',
-                certificates: person.certificates || '',
-                experience: person.experience?.projectCount || 0,  // experience 是整数
-                skills: person.customSkills || [],
+                // 实际表结构字段
+                skills: person.experience?.processes || [],  // 技能存储在 skills 字段
                 capabilities: person.capabilities || {
-                    technical: 5, management: 5, coordination: 5,
-                    communication: 5, problem: 5, learning: 5,
-                    safety: 5, teamwork: 5
+                    technical: 5, management: 5, coordination: 5
                 },
+                experience: person.experience?.projectCount || 0,  // experience 是整数
                 years: person.experience?.years || 0,
                 max_projects: person.maxProjects || 3,
                 phone: person.contact?.phone || '',
-                email: person.contact?.email || ''
+                email: person.contact?.email || '',
+                created_at: person.createdAt || new Date().toISOString(),
+                updated_at: new Date().toISOString()
             };
 
+            console.log(`[DataStore] 人员云端数据:`, cloudData);
+            
             const result = await supabaseClient.upsert('personnel', cloudData);
             if (result.success) {
                 console.log(`[DataStore] 人员同步成功: ${person.name}`);
@@ -428,11 +438,14 @@ const dataStore = {
         }
 
         const existingIndex = personnel.findIndex(p => p.id === person.id);
+        let savedPerson;
 
         if (existingIndex >= 0) {
-            personnel[existingIndex] = this.deepMerge(personnel[existingIndex], person);
+            savedPerson = this.deepMerge(personnel[existingIndex], person);
+            personnel[existingIndex] = savedPerson;
         } else {
             personnel.push(person);
+            savedPerson = person;
         }
 
         this.saveToStorage(this.KEYS.PERSONNEL, personnel);
@@ -440,7 +453,7 @@ const dataStore = {
         // 只有明确要求同步时才同步到云端（不在这里自动同步）
         // 调用者（如 app.js）会根据用户权限决定是否同步
 
-        return person;
+        return savedPerson;
     },
 
     deletePersonnel(id) {

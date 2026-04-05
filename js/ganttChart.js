@@ -709,6 +709,24 @@ const ganttChart = {
     },
 
     /**
+     * 滚动到今天位置
+     */
+    scrollToToday() {
+        const today = formatDate(new Date());
+        console.log('[Gantt] 滚动到今天:', today);
+        this.scrollToDate(today);
+        
+        // 添加视觉反馈
+        const todayLine = this.container.querySelector('.gantt-today');
+        if (todayLine) {
+            todayLine.style.animation = 'pulse 1s ease-in-out 3';
+            setTimeout(() => {
+                todayLine.style.animation = '';
+            }, 3000);
+        }
+    },
+
+    /**
      * 高亮项目
      * @param {string} projectId - 项目ID
      */
