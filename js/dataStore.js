@@ -106,9 +106,17 @@ const dataStore = {
                     age: p.age,
                     department: p.department || '',
                     position: p.position || '',
+                    education: p.education || '',
+                    major: p.major || '',
+                    title: p.title || '',
+                    certificates: p.certificates || '',
                     experience: { projectCount: p.experience || 0, years: p.years || 0, processes: [] },
                     customSkills: p.skills || [],
-                    capabilities: p.capabilities || { technical: 5, management: 5, coordination: 5 },
+                    capabilities: p.capabilities || {
+                        technical: 5, management: 5, coordination: 5,
+                        communication: 5, problem: 5, learning: 5,
+                        safety: 5, teamwork: 5
+                    },
                     maxProjects: p.max_projects || 3,
                     contact: { phone: p.phone || '', email: p.email || '' },
                     createdAt: p.created_at,
@@ -213,9 +221,17 @@ const dataStore = {
                 age: person.age,
                 department: person.department || '',
                 position: person.position || '',
+                education: person.education || '',
+                major: person.major || '',
+                title: person.title || '',
+                certificates: person.certificates || '',
                 experience: person.experience?.projectCount || 0,  // experience 是整数
                 skills: person.customSkills || [],
-                capabilities: person.capabilities || { technical: 5, management: 5, coordination: 5 },
+                capabilities: person.capabilities || {
+                    technical: 5, management: 5, coordination: 5,
+                    communication: 5, problem: 5, learning: 5,
+                    safety: 5, teamwork: 5
+                },
                 years: person.experience?.years || 0,
                 max_projects: person.maxProjects || 3,
                 phone: person.contact?.phone || '',

@@ -118,6 +118,91 @@ const app = {
     },
 
     /**
+     * 切换移动端菜单显示
+     */
+    toggleMobileMenu() {
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        if (mobileMenu) {
+            mobileMenu.classList.toggle('hidden');
+        }
+        if (menuBtn) {
+            const icon = menuBtn.querySelector('i');
+            if (icon) {
+                if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                } else {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            }
+        }
+    },
+
+    /**
+     * 切换标签页
+     * @param {string} tabName - 标签页名称
+     */
+    switchTab(tabName) {
+        // 隐藏所有标签页
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.add('hidden');
+        });
+
+        // 显示目标标签页
+        const targetTab = document.getElementById(`${tabName}-tab`);
+        if (targetTab) {
+            targetTab.classList.remove('hidden');
+        }
+
+        // 更新导航按钮状态
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.classList.remove('bg-white/30');
+        });
+        const activeBtn = document.querySelector(`.nav-btn[data-tab="${tabName}"]`);
+        if (activeBtn) {
+            activeBtn.classList.add('bg-white/30');
+        }
+
+        // 更新移动端菜单按钮状态
+        document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+            btn.classList.remove('bg-emerald-600');
+        });
+
+        // 关闭移动端菜单
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        if (mobileMenu) {
+            mobileMenu.classList.add('hidden');
+        }
+        if (menuBtn) {
+            const icon = menuBtn.querySelector('i');
+            if (icon) {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+        }
+
+        // 触发特定标签页的初始化
+        if (tabName === 'gantt' && typeof ganttChart !== 'undefined' && ganttChart.render) {
+            setTimeout(() => ganttChart.render(), 100);
+        }
+        if (tabName === 'map' && typeof mapVisualization !== 'undefined') {
+            setTimeout(() => {
+                if (mapVisualization.map) {
+                    mapVisualization.map.resize();
+                }
+            }, 100);
+        }
+        if (tabName === 'assessment' && typeof assessmentPage !== 'undefined') {
+            assessmentPage.init();
+        }
+
+        this.currentTab = tabName;
+    },
+
+    /**
      * 初始化省份选择器
      */
     initProvinceSelectors() {
@@ -1241,24 +1326,40 @@ const app = {
             
             // 设置能力评分
             if (person.capabilities) {
-                const techSlider = document.getElementById('capability-technical');
-                const techValue = document.getElementById('capability-technical-value');
-                const mgmtSlider = document.getElementById('capability-management');
-                const mgmtValue = document.getElementById('capability-management-value');
-                const coordSlider = document.getElementById('capability-coordination');
-                const coordValue = document.getElementById('capability-coordination-value');
-                
-                if (techSlider) techSlider.value = person.capabilities.technical || 5;
-                if (techValue) techValue.textContent = person.capabilities.technical || 5;
-                if (mgmtSlider) mgmtSlider.value = person.capabilities.management || 5;
-                if (mgmtValue) mgmtValue.textContent = person.capabilities.management || 5;
-                if (coordSlider) coordSlider.value = person.capabilities.coordination || 5;
-                if (coordValue) coordValue.textContent = person.capabilities.coordination || 5;
+                const capFields = ['technical', 'management', 'coordination', 'communication', 'problem', 'learning', 'safety', 'teamwork'];
+                capFields.forEach(field => {
+                    const slider = document.getElementById(`capability-${field}`);
+                    const valueEl = document.getElementById(`capability-${field}-value`);
+                    if (slider && person.capabilities[field] !== undefined) {
+                        slider.value = person.capabilities[field];
+                    }
+                    if (valueEl && person.capabilities[field] !== undefined) {
+                        valueEl.textContent = person.capabilities[field];
+                    }
+                });
             }
+
+            // 设置学历、专业、职称
+            const eduEl = document.getElementById('personnel-education');
+            const majorEl = document.getElementById('personnel-major');
+            const titleEl = document.getElementById('personnel-title');
+            const certEl = document.getElementById('personnel-certificates');
+            if (eduEl) eduEl.value = person.education || '';
+            if (majorEl) majorEl.value = person.major || '';
+            if (titleEl) titleEl.value = person.title || '';
+            if (certEl) certEl.value = person.certificates || '';
         } else {
             title.textContent = '添加人员';
+            // 重置能力评估滑块
+            const capabilityFields = ['technical', 'management', 'coordination', 'communication', 'problem', 'learning', 'safety', 'teamwork'];
+            capabilityFields.forEach(field => {
+                const slider = document.getElementById(`capability-${field}`);
+                const value = document.getElementById(`capability-${field}-value`);
+                if (slider) slider.value = 5;
+                if (value) value.textContent = '5';
+            });
         }
-        
+
         modal.classList.remove('hidden');
     },
 
@@ -1297,6 +1398,10 @@ const app = {
             age: parseInt(document.getElementById('personnel-age')?.value) || null,
             department: document.getElementById('personnel-department')?.value || '',
             position: document.getElementById('personnel-position')?.value || '',
+            education: document.getElementById('personnel-education')?.value || '',
+            major: document.getElementById('personnel-major')?.value || '',
+            title: document.getElementById('personnel-title')?.value || '',
+            certificates: document.getElementById('personnel-certificates')?.value || '',
             experience: {
                 projectCount: parseInt(document.getElementById('personnel-experience')?.value) || 0,
                 years: parseInt(document.getElementById('personnel-years')?.value) || 0,
@@ -1306,7 +1411,12 @@ const app = {
             capabilities: {
                 technical: parseInt(document.getElementById('capability-technical')?.value) || 5,
                 management: parseInt(document.getElementById('capability-management')?.value) || 5,
-                coordination: parseInt(document.getElementById('capability-coordination')?.value) || 5
+                coordination: parseInt(document.getElementById('capability-coordination')?.value) || 5,
+                communication: parseInt(document.getElementById('capability-communication')?.value) || 5,
+                problem: parseInt(document.getElementById('capability-problem')?.value) || 5,
+                learning: parseInt(document.getElementById('capability-learning')?.value) || 5,
+                safety: parseInt(document.getElementById('capability-safety')?.value) || 5,
+                teamwork: parseInt(document.getElementById('capability-teamwork')?.value) || 5
             },
             maxProjects: parseInt(document.getElementById('personnel-max-projects')?.value) || 3,
             contact: {

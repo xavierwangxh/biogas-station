@@ -186,16 +186,19 @@
     <nav class="bg-gradient-to-r from-emerald-700 to-teal-600 text-white shadow-lg">
         <div class="container mx-auto px-4">
             <div class="flex items-center justify-between h-16">
-                <div class="flex items-center justify-between w-full">
-                    <div class="flex items-center space-x-3">
-                        <i class="fas fa-industry text-2xl"></i>
-                        <span class="text-xl font-bold">沼气提纯站项目管理系统</span>
-                    </div>
-                    <!-- 用户信息区域 -->
-                    <div id="user-info-container" class="flex items-center space-x-3">
-                        <!-- 动态渲染 -->
-                    </div>
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-industry text-2xl"></i>
+                    <span class="text-xl font-bold">沼气提纯站项目管理系统</span>
                 </div>
+                <!-- 用户信息区域 -->
+                <div id="user-info-container" class="flex items-center space-x-3">
+                    <!-- 动态渲染 -->
+                </div>
+                <!-- 汉堡菜单按钮 (移动端) -->
+                <button onclick="app.toggleMobileMenu()" class="md:hidden p-2 rounded-lg hover:bg-white/20 transition" id="mobile-menu-btn">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                <!-- 桌面端导航 -->
                 <div class="hidden md:flex items-center space-x-1">
                     <button onclick="app.switchTab('dashboard')" class="nav-btn px-4 py-2 rounded-lg hover:bg-white/20 transition" data-tab="dashboard">
                         <i class="fas fa-tachometer-alt mr-2"></i>概览
@@ -264,10 +267,65 @@
         </div>
     </nav>
 
+    <!-- 移动端菜单 -->
+    <div id="mobile-menu" class="md:hidden fixed top-16 left-0 right-0 bg-emerald-700 shadow-xl z-50 hidden">
+        <div class="flex flex-col py-2">
+            <button onclick="app.switchTab('dashboard'); app.toggleMobileMenu();" class="mobile-nav-btn px-6 py-3 hover:bg-emerald-600 text-left">
+                <i class="fas fa-tachometer-alt mr-3"></i>概览
+            </button>
+            <button onclick="app.switchTab('projects'); app.toggleMobileMenu();" class="mobile-nav-btn px-6 py-3 hover:bg-emerald-600 text-left">
+                <i class="fas fa-project-diagram mr-3"></i>项目管理
+            </button>
+            <button onclick="app.switchTab('personnel'); app.toggleMobileMenu();" class="mobile-nav-btn px-6 py-3 hover:bg-emerald-600 text-left">
+                <i class="fas fa-users mr-3"></i>人员管理
+            </button>
+            <button onclick="app.switchTab('map'); app.toggleMobileMenu();" class="mobile-nav-btn px-6 py-3 hover:bg-emerald-600 text-left">
+                <i class="fas fa-map-marked-alt mr-3"></i>地图视图
+            </button>
+            <button onclick="app.switchTab('gantt'); app.toggleMobileMenu();" class="mobile-nav-btn px-6 py-3 hover:bg-emerald-600 text-left">
+                <i class="fas fa-stream mr-3"></i>甘特图
+            </button>
+            <button onclick="app.switchTab('assessment'); app.toggleMobileMenu();" class="mobile-nav-btn px-6 py-3 hover:bg-emerald-600 text-left">
+                <i class="fas fa-chart-line mr-3"></i>人员负荷评估
+            </button>
+            <div class="border-t border-emerald-600 mt-2 pt-2">
+                <button onclick="document.getElementById('import-projects-file').click();" class="mobile-nav-btn px-6 py-3 hover:bg-emerald-600 text-left w-full text-left">
+                    <i class="fas fa-upload mr-3"></i>导入项目
+                </button>
+                <button onclick="document.getElementById('import-personnel-file').click();" class="mobile-nav-btn px-6 py-3 hover:bg-emerald-600 text-left w-full text-left">
+                    <i class="fas fa-upload mr-3"></i>导入人员
+                </button>
+                <button onclick="excelExporter.exportProjects();" class="mobile-nav-btn px-6 py-3 hover:bg-emerald-600 text-left w-full text-left">
+                    <i class="fas fa-download mr-3"></i>导出项目
+                </button>
+                <button onclick="excelExporter.exportPersonnel();" class="mobile-nav-btn px-6 py-3 hover:bg-emerald-600 text-left w-full text-left">
+                    <i class="fas fa-download mr-3"></i>导出人员
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- 主内容区域 -->
     <main class="container mx-auto px-4 py-6">
         <!-- 概览面板 -->
         <div id="dashboard-tab" class="tab-content">
+            <!-- 手机端快速导航 -->
+            <div class="md:hidden mb-6">
+                <div class="grid grid-cols-3 gap-3">
+                    <button onclick="app.switchTab('projects')" class="flex flex-col items-center p-3 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition">
+                        <i class="fas fa-project-diagram text-emerald-600 text-xl mb-1"></i>
+                        <span class="text-xs text-gray-700">项目管理</span>
+                    </button>
+                    <button onclick="app.switchTab('personnel')" class="flex flex-col items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition">
+                        <i class="fas fa-users text-blue-600 text-xl mb-1"></i>
+                        <span class="text-xs text-gray-700">人员管理</span>
+                    </button>
+                    <button onclick="app.switchTab('map')" class="flex flex-col items-center p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition">
+                        <i class="fas fa-map-marked-alt text-purple-600 text-xl mb-1"></i>
+                        <span class="text-xs text-gray-700">地图视图</span>
+                    </button>
+                </div>
+            </div>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-emerald-500">
                     <div class="flex items-center justify-between">
@@ -361,6 +419,12 @@
 
         <!-- 项目管理面板 -->
         <div id="projects-tab" class="tab-content hidden">
+            <!-- 移动端返回按钮 -->
+            <div class="md:hidden mb-4">
+                <button onclick="app.switchTab('dashboard')" class="flex items-center text-emerald-600 hover:text-emerald-700">
+                    <i class="fas fa-arrow-left mr-2"></i>返回概述
+                </button>
+            </div>
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-gray-800">项目管理</h2>
                 <button onclick="app.showProjectModal()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition">
@@ -417,6 +481,12 @@
 
         <!-- 人员管理面板 -->
         <div id="personnel-tab" class="tab-content hidden">
+            <!-- 移动端返回按钮 -->
+            <div class="md:hidden mb-4">
+                <button onclick="app.switchTab('dashboard')" class="flex items-center text-emerald-600 hover:text-emerald-700">
+                    <i class="fas fa-arrow-left mr-2"></i>返回概述
+                </button>
+            </div>
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-gray-800">人员管理</h2>
                 <div class="flex gap-2">
@@ -445,6 +515,12 @@
 
         <!-- 地图视图面板 -->
         <div id="map-tab" class="tab-content hidden">
+            <!-- 移动端返回按钮 -->
+            <div class="md:hidden mb-4">
+                <button onclick="app.switchTab('dashboard')" class="flex items-center text-emerald-600 hover:text-emerald-700">
+                    <i class="fas fa-arrow-left mr-2"></i>返回概述
+                </button>
+            </div>
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-2xl font-bold text-gray-800">地图视图</h2>
                 <div class="flex gap-2">
@@ -463,6 +539,12 @@
 
         <!-- 甘特图面板 -->
         <div id="gantt-tab" class="tab-content hidden">
+            <!-- 移动端返回按钮 -->
+            <div class="md:hidden mb-4">
+                <button onclick="app.switchTab('dashboard')" class="flex items-center text-emerald-600 hover:text-emerald-700">
+                    <i class="fas fa-arrow-left mr-2"></i>返回概述
+                </button>
+            </div>
             <div class="flex flex-col gap-4 mb-4">
                 <div class="flex justify-between items-center">
                     <h2 class="text-2xl font-bold text-gray-800">项目甘特图</h2>
@@ -519,6 +601,12 @@
 
         <!-- 人员负荷评估面板 -->
         <div id="assessment-tab" class="tab-content hidden">
+            <!-- 移动端返回按钮 -->
+            <div class="md:hidden mb-4">
+                <button onclick="app.switchTab('dashboard')" class="flex items-center text-emerald-600 hover:text-emerald-700">
+                    <i class="fas fa-arrow-left mr-2"></i>返回概述
+                </button>
+            </div>
             <div id="personnel-assessment-container">
                 <!-- 由app.js动态加载personnel-assessment.html内容 -->
             </div>
@@ -816,9 +904,42 @@
                         <input type="number" id="personnel-years" min="0" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">学历</label>
+                        <select id="personnel-education" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">请选择学历</option>
+                            <option value="中专">中专</option>
+                            <option value="大专">大专</option>
+                            <option value="本科">本科</option>
+                            <option value="硕士">硕士</option>
+                            <option value="博士">博士</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">专业</label>
+                        <input type="text" id="personnel-major" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="例如：化学工程、环境工程">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">职称</label>
+                        <select id="personnel-title" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">请选择职称</option>
+                            <option value="技术员">技术员</option>
+                            <option value="助理工程师">助理工程师</option>
+                            <option value="工程师">工程师</option>
+                            <option value="高级工程师">高级工程师</option>
+                            <option value="教授级高工">教授级高工</option>
+                        </select>
+                    </div>
+                    <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">最大可承担项目数</label>
                         <input type="number" id="personnel-max-projects" min="1" value="3" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
+                </div>
+
+                <!-- 证书资质 -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">证书资质（用逗号分隔）</label>
+                    <input type="text" id="personnel-certificates" placeholder="例如：注册工程师、安全员证"
+                           class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
 
                 <!-- 熟悉技能（与项目工艺匹配） -->
@@ -872,21 +993,46 @@
 
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">能力评估 (1-10分)</label>
-                    <div class="grid grid-cols-3 gap-4">
-                        <div>
-                            <label class="text-xs text-gray-500">技术能力</label>
-                            <input type="range" id="capability-technical" min="1" max="10" value="5" class="w-full">
-                            <span id="capability-technical-value" class="text-sm">5</span>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-emerald-50 p-4 rounded-lg">
+                        <div class="flex items-center gap-2">
+                            <label class="text-sm text-gray-700 w-24">技术能力</label>
+                            <input type="range" id="capability-technical" min="1" max="10" value="5" class="flex-1" oninput="document.getElementById('capability-technical-value').textContent = this.value">
+                            <span id="capability-technical-value" class="text-sm font-medium w-8">5</span>
                         </div>
-                        <div>
-                            <label class="text-xs text-gray-500">管理能力</label>
-                            <input type="range" id="capability-management" min="1" max="10" value="5" class="w-full">
-                            <span id="capability-management-value" class="text-sm">5</span>
+                        <div class="flex items-center gap-2">
+                            <label class="text-sm text-gray-700 w-24">管理能力</label>
+                            <input type="range" id="capability-management" min="1" max="10" value="5" class="flex-1" oninput="document.getElementById('capability-management-value').textContent = this.value">
+                            <span id="capability-management-value" class="text-sm font-medium w-8">5</span>
                         </div>
-                        <div>
-                            <label class="text-xs text-gray-500">协调能力</label>
-                            <input type="range" id="capability-coordination" min="1" max="10" value="5" class="w-full">
-                            <span id="capability-coordination-value" class="text-sm">5</span>
+                        <div class="flex items-center gap-2">
+                            <label class="text-sm text-gray-700 w-24">协调能力</label>
+                            <input type="range" id="capability-coordination" min="1" max="10" value="5" class="flex-1" oninput="document.getElementById('capability-coordination-value').textContent = this.value">
+                            <span id="capability-coordination-value" class="text-sm font-medium w-8">5</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="text-sm text-gray-700 w-24">沟通能力</label>
+                            <input type="range" id="capability-communication" min="1" max="10" value="5" class="flex-1" oninput="document.getElementById('capability-communication-value').textContent = this.value">
+                            <span id="capability-communication-value" class="text-sm font-medium w-8">5</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="text-sm text-gray-700 w-24">问题解决</label>
+                            <input type="range" id="capability-problem" min="1" max="10" value="5" class="flex-1" oninput="document.getElementById('capability-problem-value').textContent = this.value">
+                            <span id="capability-problem-value" class="text-sm font-medium w-8">5</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="text-sm text-gray-700 w-24">学习能力</label>
+                            <input type="range" id="capability-learning" min="1" max="10" value="5" class="flex-1" oninput="document.getElementById('capability-learning-value').textContent = this.value">
+                            <span id="capability-learning-value" class="text-sm font-medium w-8">5</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="text-sm text-gray-700 w-24">安全管理</label>
+                            <input type="range" id="capability-safety" min="1" max="10" value="5" class="flex-1" oninput="document.getElementById('capability-safety-value').textContent = this.value">
+                            <span id="capability-safety-value" class="text-sm font-medium w-8">5</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="text-sm text-gray-700 w-24">团队协作</label>
+                            <input type="range" id="capability-teamwork" min="1" max="10" value="5" class="flex-1" oninput="document.getElementById('capability-teamwork-value').textContent = this.value">
+                            <span id="capability-teamwork-value" class="text-sm font-medium w-8">5</span>
                         </div>
                     </div>
                 </div>

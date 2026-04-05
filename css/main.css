@@ -338,8 +338,125 @@ button:active {
     nav, footer, .no-print {
         display: none !important;
     }
-    
+
     .tab-content {
         display: block !important;
+    }
+}
+
+/* 移动端响应式样式 */
+@media (max-width: 768px) {
+    /* 导航栏 */
+    nav .container {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+
+    /* 标题文字 */
+    nav .text-xl {
+        font-size: 1rem;
+    }
+
+    /* 主内容区域 */
+    main.container {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    /* 项目表格 */
+    #projects-table-body td,
+    #projects-table-body th {
+        padding: 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    /* 模态框 */
+    #project-modal .bg-white,
+    #personnel-modal .bg-white,
+    #department-modal .bg-white {
+        max-height: 85vh;
+        margin: 0.5rem;
+    }
+
+    /* 表单输入 - 防止iOS缩放 */
+    #project-form input,
+    #project-form select,
+    #personnel-form input,
+    #personnel-form select {
+        font-size: 16px;
+    }
+
+    /* 地图容器 */
+    #map-container-wrapper,
+    #map-container {
+        height: 400px !important;
+    }
+
+    /* 甘特图容器 */
+    #gantt-container {
+        height: 400px;
+        overflow-x: auto;
+    }
+
+    /* 人员卡片网格 */
+    #personnel-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* 统计卡片 */
+    .grid.grid-cols-1.md\:grid-cols-4 {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    /* 快捷操作网格 */
+    .grid.grid-cols-2 {
+        grid-template-columns: 1fr;
+    }
+
+    /* 移动端导航菜单 */
+    #mobile-menu {
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    /* 模态框表单网格 */
+    .grid.grid-cols-1.md\:grid-cols-2,
+    .grid.grid-cols-1.md\:grid-cols-3 {
+        grid-template-columns: 1fr;
+    }
+
+    /* 项目详情模态框 */
+    #project-detail-modal .bg-white {
+        max-height: 85vh;
+    }
+}
+
+/* 极小屏幕 */
+@media (max-width: 480px) {
+    /* 标题 */
+    h2.text-2xl {
+        font-size: 1.25rem;
+    }
+
+    /* 统计数字 */
+    .text-3xl {
+        font-size: 1.5rem;
+    }
+
+    /* 按钮 */
+    button.px-4.py-2 {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+    }
+
+    /* 模态框内边距 */
+    .p-6 {
+        padding: 1rem;
+    }
+
+    /* 地图容器 */
+    #map-container-wrapper,
+    #map-container {
+        height: 300px !important;
     }
 }
