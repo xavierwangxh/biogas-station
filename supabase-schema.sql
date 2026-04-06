@@ -19,11 +19,12 @@ CREATE TABLE projects (
 );
 
 -- 3. 创建人员表（使用 TEXT 类型的 ID 以支持前端生成的字符串 ID）
+-- 注意：使用 birthday 代替 age，年龄会根据出生日期自动计算
 CREATE TABLE personnel (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     gender TEXT DEFAULT '男',
-    age INTEGER,
+    birthday DATE,  -- 出生日期，年龄会根据此字段自动计算
     department TEXT DEFAULT '',
     position TEXT DEFAULT '',
     education TEXT DEFAULT '',
