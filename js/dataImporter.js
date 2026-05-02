@@ -275,6 +275,7 @@ const dataImporter = {
             name: String(name).trim(),
             gender: String(getValue(row, ['性别', 'gender']) || ''),
             age: parseInt(getValue(row, ['年龄', 'age'])) || 0,
+            ageRecordedAt: new Date().toISOString(),
             department: String(getValue(row, ['部门', 'department', 'dept']) || ''),
             position: String(getValue(row, ['职位', '岗位', 'position']) || ''),
             experience: {

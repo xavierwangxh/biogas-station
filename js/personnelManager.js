@@ -305,8 +305,9 @@ const personnelManager = {
             });
 
             // 平均年龄
-            if (person.age) {
-                totalAge += person.age;
+            const currentAge = getCurrentAge(person);
+            if (currentAge !== null && currentAge !== undefined) {
+                totalAge += currentAge;
                 ageCount++;
             }
 

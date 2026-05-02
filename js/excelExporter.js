@@ -55,7 +55,7 @@ const excelExporter = {
             return {
                 '姓名': person.name,
                 '性别': person.gender || '',
-                '年龄': person.age || '',
+                '年龄': getCurrentAge(person) || '',
                 '部门': person.department || '',
                 '职位': person.position || '',
                 '项目经验数': person.experience?.projectCount || 0,

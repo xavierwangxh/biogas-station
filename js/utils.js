@@ -631,6 +631,36 @@ function validatePersonnel(data) {
     };
 }
 
+/**
+ * 计算当前年龄
+ * 如果人员记录包含 ageRecordedAt/createdAt/updatedAt，则基于时间差自动计算当前年龄
+ * @param {Object} person
+ * @returns {number|null}
+ */
+function getCurrentAge(person) {
+    if (!person || person.age === undefined || person.age === null) return null;
+
+    const baseAge = Number(person.age);
+    if (Number.isNaN(baseAge)) return null;
+
+    const reference = person.ageRecordedAt || person.createdAt || person.updatedAt;
+    if (!reference) return baseAge;
+
+    const refDate = new Date(reference);
+    if (Number.isNaN(refDate.getTime())) return baseAge;
+
+    const now = new Date();
+    let years = now.getFullYear() - refDate.getFullYear();
+    if (
+        now.getMonth() < refDate.getMonth() ||
+        (now.getMonth() === refDate.getMonth() && now.getDate() < refDate.getDate())
+    ) {
+        years--;
+    }
+
+    return baseAge + years;
+}
+
 // ==================== 对象克隆 ====================
 
 function deepClone(obj) {

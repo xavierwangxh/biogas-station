@@ -97,11 +97,15 @@ const dataStore = {
             if (cloudPersonnel && cloudPersonnel.length > 0) {
                 console.log(`[DataStore] 云端获取到 ${cloudPersonnel.length} 名人员，强制更新本地数据`);
                 // 转换为前端格式（与云端表结构匹配）
-                const personnel = cloudPersonnel.map(p => ({
+                const localPersonnel = this.getAllPersonnel();
+            const personnel = cloudPersonnel.map(p => {
+                const local = localPersonnel.find(lp => lp.id === p.id);
+                return {
                     id: p.id,
                     name: p.name,
                     gender: p.gender || '男',
                     age: p.age,
+                    ageRecordedAt: local?.ageRecordedAt,
                     department: p.department || '',
                     position: p.position || '',
                     education: '',  // 云端表没有这些字段
@@ -125,8 +129,9 @@ const dataStore = {
                     currentProjects: [],  // 云端表没有这个字段
                     createdAt: p.created_at,
                     updatedAt: p.updated_at
-                }));
-                localStorage.setItem(this.KEYS.PERSONNEL, JSON.stringify(personnel));
+                };
+            });
+            localStorage.setItem(this.KEYS.PERSONNEL, JSON.stringify(personnel));
             }
 
             this.cloudSync.enabled = true;
@@ -229,7 +234,7 @@ const dataStore = {
                 id: person.id,
                 name: person.name,
                 gender: person.gender || '男',
-                age: person.age,
+                age: getCurrentAge(person) || person.age,
                 department: person.department || '',
                 position: person.position || '',
                 // 实际表结构字段
@@ -438,6 +443,15 @@ const dataStore = {
         }
 
         const existingIndex = personnel.findIndex(p => p.id === person.id);
+        const oldPerson = existingIndex >= 0 ? personnel[existingIndex] : null;
+
+        if (person.age !== null && person.age !== undefined) {
+            const baseAge = Number(person.age);
+            if (!Number.isNaN(baseAge) && (!oldPerson || baseAge !== Number(oldPerson.age))) {
+                person.ageRecordedAt = person.updatedAt;
+            }
+        }
+
         let savedPerson;
 
         if (existingIndex >= 0) {

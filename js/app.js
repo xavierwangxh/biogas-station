@@ -1331,7 +1331,7 @@ const app = {
             
             if (nameEl) nameEl.value = person.name || '';
             if (genderEl) genderEl.value = person.gender || '男';
-            if (ageEl) ageEl.value = person.age || '';
+            if (ageEl) ageEl.value = getCurrentAge(person) || '';
             if (deptEl) deptEl.value = person.department || '';
             if (posEl) posEl.value = person.position || '';
             if (expEl) expEl.value = person.experience?.projectCount || '';
