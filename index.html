@@ -34,6 +34,7 @@
     <script src="js/excelExporter.js"></script>
     <script src="js/dataImporter.js"></script>
     <script src="js/districtCoordinates.js"></script>
+    <script src="js/clickEdit.js"></script>
 </head>
 <body class="bg-gray-50">
     <!-- 登录模态框 -->
@@ -77,7 +78,7 @@
             <div class="mt-6 text-center text-sm text-gray-500">
                 <p>默认账户：</p>
                 <p class="mt-1">普通用户：<code class="bg-gray-100 px-2 py-1 rounded">user</code> / <code class="bg-gray-100 px-2 py-1 rounded">123123</code></p>
-                <p class="mt-1">管理员：<code class="bg-gray-100 px-2 py-1 rounded">admin</code> / <code class="bg-gray-100 px-2 py-1 rounded">!23456</code></p>
+                <p class="mt-1">管理员：<code class="bg-gray-100 px-2 py-1 rounded">admin</code></p>
             </div>
         </div>
     </div>
@@ -465,7 +466,7 @@
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">项目名称</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">位置</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">设计规模</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">设计规模(标方/天)</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">处理工艺</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">当前阶段</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">牵头人</th>
@@ -675,11 +676,11 @@
                     <h4 class="text-lg font-semibold mb-4 text-emerald-700 border-b pb-2">技术参数</h4>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">设计规模 (Nm³/h)</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">设计规模(标方/天)</label>
                             <input type="number" id="project-capacity" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">日产气量预估 (千方/天)</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">年产天然气预估(万标方/年)</label>
                             <input type="number" id="project-daily-output" step="0.1" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500">
                         </div>
                         <div>

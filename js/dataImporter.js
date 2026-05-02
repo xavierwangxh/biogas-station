@@ -242,8 +242,8 @@ const dataImporter = {
                 latitude: parseFloat(getValue(row, ['纬度', 'latitude', 'lat'])) || 0
             },
             scale: {
-                designCapacity: parseFloat(getValue(row, ['设计规模(Nm³/h)', '设计规模', '规模'])) || 0,
-                dailyOutput: parseFloat(getValue(row, ['日产气量预估(千方/天)', '日产气量', '日产量'])) || 0,
+                designCapacity: parseFloat(getValue(row, ['设计规模(标方/天)', '设计规模(Nm³/h)', '设计规模', '规模'])) || 0,
+                dailyOutput: parseFloat(getValue(row, ['年产天然气预估(万标方/年)', '日产气量预估(千方/天)', '日产气量', '日产量'])) || 0,
                 processType: this.parseProcessType(getValue(row, ['处理工艺', '工艺', 'processType']))
             },
             costs: {
@@ -343,8 +343,8 @@ const dataImporter = {
                 '城市': '潍坊市',
                 '区县': '奎文区',
                 '详细地址': 'XX路XX号',
-                '设计规模(Nm³/h)': 1000,
-                '日产气量预估(千方/天)': 2.4,
+                '设计规模(标方/天)': 1000,
+                '年产天然气预估(万标方/年)': 2.4,
                 '处理工艺': 'PSA变压吸附',
                 '电费单价(元/度)': 0.6,
                 '蒸汽费单价(元/吨)': 200,

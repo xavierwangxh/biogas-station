@@ -668,7 +668,7 @@ const app = {
                 <tr class="hover:bg-gray-50">
                     <td class="px-6 py-4 font-medium text-gray-900">${project.name}</td>
                     <td class="px-6 py-4 text-gray-600">${project.location?.province || ''} ${project.location?.city || ''} ${project.location?.district || ''}</td>
-                    <td class="px-6 py-4">${project.scale?.designCapacity ? project.scale.designCapacity + ' Nm³/h' : '-'}</td>
+                    <td class="px-6 py-4">${project.scale?.designCapacity ? project.scale.designCapacity + ' 标方/天' : '-'}</td>
                     <td class="px-6 py-4">${processNames || '-'}</td>
                     <td class="px-6 py-4">
                         <span class="stage-badge ${stageClass}">${currentStage.stageName}</span>
@@ -777,12 +777,12 @@ const app = {
             <div class="space-y-6">
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="text-sm text-gray-500">设计规模</label>
-                        <p class="font-medium">${project.scale?.designCapacity || '-'} Nm³/h</p>
+                        <label class="text-sm text-gray-500">设计规模(标方/天)</label>
+                        <p class="font-medium">${project.scale?.designCapacity || '-'} 标方/天</p>
                     </div>
                     <div>
-                        <label class="text-sm text-gray-500">日产气量</label>
-                        <p class="font-medium">${project.scale?.dailyOutput || '-'} 千方/天</p>
+                        <label class="text-sm text-gray-500">年产天然气预估(万标方/年)</label>
+                        <p class="font-medium">${project.scale?.dailyOutput || '-'} 万标方/年</p>
                     </div>
                     <div>
                         <label class="text-sm text-gray-500">处理工艺</label>

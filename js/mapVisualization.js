@@ -392,8 +392,8 @@ const mapVisualization = {
                 <h4 style="font-size: 16px; font-weight: 700; color: #059669; margin-bottom: 12px;">${project.name}</h4>
                 <div style="font-size: 13px; line-height: 1.8; color: #4b5563;">
                     <p><span style="color: #9ca3af;">位置：</span>${project.location?.province || ''} ${project.location?.city || ''} ${project.location?.district || ''}</p>
-                    <p><span style="color: #9ca3af;">设计规模：</span>${project.scale?.designCapacity || '-'} Nm³/h</p>
-                    <p><span style="color: #9ca3af;">日产量：</span>${project.scale?.dailyOutput || '-'} 千方/天</p>
+                    <p><span style="color: #9ca3af;">设计规模(标方/天)：</span>${project.scale?.designCapacity || '-'} 标方/天</p>
+                    <p><span style="color: #9ca3af;">年产天然气预估(万标方/年)：</span>${project.scale?.dailyOutput || '-'} 万标方/年</p>
                     <p><span style="color: #9ca3af;">处理工艺：</span><span style="padding: 2px 8px; border-radius: 4px; color: white; background: ${this.getProcessColor(project.scale?.processType)};">${processNames || '-'}</span></p>
                     <p><span style="color: #9ca3af;">当前阶段：</span><span style="font-weight: 500;">${currentStage.stageName}</span></p>
                     <p><span style="color: #9ca3af;">阶段牵头：</span>${leader}</p>

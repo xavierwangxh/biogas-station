@@ -22,8 +22,8 @@ const excelExporter = {
                 '详细地址': project.location?.address || '',
                 '经度': project.location?.longitude || '',
                 '纬度': project.location?.latitude || '',
-                '设计规模(Nm³/h)': project.scale?.designCapacity || '',
-                '日产气量预估(千方/天)': project.scale?.dailyOutput || '',
+                '设计规模(标方/天)': project.scale?.designCapacity || '',
+                '年产天然气预估(万标方/年)': project.scale?.dailyOutput || '',
                 '处理工艺': PROCESS_TYPES[project.scale?.processType] || '',
                 '电费单价(元/度)': project.costs?.electricityPrice || '',
                 '蒸汽费单价(元/吨)': project.costs?.steamPrice || '',
@@ -98,8 +98,8 @@ const excelExporter = {
                 '手续阶段项目数': stageDist.procedure || 0,
                 '建设阶段项目数': stageDist.construction || 0,
                 '运营阶段项目数': stageDist.operation || 0,
-                '总设计规模(Nm³/h)': group.totalCapacity || 0,
-                '总日产气量(千方/天)': group.totalDailyOutput || 0,
+                '总设计规模(标方/天)': group.totalCapacity || 0,
+                '总年产天然气(万标方/年)': group.totalDailyOutput || 0,
                 '包含项目': group.projects.map(p => p.name).join('、')
             };
         });
@@ -155,8 +155,8 @@ const excelExporter = {
                 '省份': project.location?.province || '',
                 '城市': project.location?.city || '',
                 '区县': project.location?.district || '',
-                '设计规模': project.scale?.designCapacity || '',
-                '日产量': project.scale?.dailyOutput || '',
+                '设计规模(标方/天)': project.scale?.designCapacity || '',
+                '年产天然气预估(万标方/年)': project.scale?.dailyOutput || '',
                 '工艺': PROCESS_TYPES[project.scale?.processType] || '',
                 '当前阶段': currentStage.stageName
             };
@@ -179,16 +179,16 @@ const excelExporter = {
         const groupData = groups.map(group => ({
             '项目群': group.name,
             '项目数': group.projectCount,
-            '总设计规模': group.totalCapacity || 0,
-            '总日产量': group.totalDailyOutput || 0
+            '总设计规模(标方/天)': group.totalCapacity || 0,
+            '总年产天然气(万标方/年)': group.totalDailyOutput || 0
         }));
 
         // 统计工作表
         const statsData = [
             { '指标': '项目总数', '数值': stats.total },
             { '指标': '各阶段分布', '数值': Object.entries(stats.byStage).map(([k, v]) => `${STAGE_NAMES[k]}:${v}`).join(', ') },
-            { '指标': '总设计规模', '数值': stats.totalCapacity },
-            { '指标': '总日产量', '数值': stats.totalDailyOutput }
+            { '指标': '总设计规模(标方/天)', '数值': stats.totalCapacity },
+            { '指标': '总年产天然气(万标方/年)', '数值': stats.totalDailyOutput }
         ];
 
         // 创建多工作表Excel
@@ -240,8 +240,8 @@ const excelExporter = {
                                     latitude: p['纬度']
                                 },
                                 scale: {
-                                    designCapacity: p['设计规模(Nm³/h)'],
-                                    dailyOutput: p['日产气量预估(千方/天)'],
+                                    designCapacity: p['设计规模(标方/天)'] || p['设计规模(Nm³/h)'],
+                                    dailyOutput: p['年产天然气预估(万标方/年)'] || p['日产气量预估(千方/天)'],
                                     processType: this.getProcessKey(p['处理工艺'])
                                 },
                                 costs: {
